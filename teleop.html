@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>219 Scouting</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .switch{
+            margin: 1%;
+            background-color: #233dff;
+            margin-left: auto;
+            margin-right: auto;
+            width: 20%;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Teleop Events</h1>
+    <p>Click the button for each corresponding shot</p>
+    <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
+    <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button><br>
+    <p class="switch">Climb?<input type="checkbox" id="climbSwitch" onchange="setClimb()"></p>
+    <p class="switch">Trap?<input type="checkbox" id="parkSwitch" onchange="setTrap()"></p>
+
+    <button id="submit" onclick="saveTele()">Next</button>
+
+
+
+    <script>
+        var teleSpeaker = 0;
+        var teleAmp = 0;
+        var climb = false;
+        var trap = false;
+
+        function speakerAdd(){
+            teleSpeaker++;
+            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
+        }
+        function ampAdd(){
+            teleAmp++;
+            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
+        }
+        function setClimb(){
+            climb = document.getElementById('climbSwitch').checked;
+        }
+        function setTrap(){
+            trap = document.getElementById('parkSwitch').checked;
+        }
+
+        function saveTele() {
+            console.log('hi');
+            localStorage.setItem('teleSpeaker', teleSpeaker)
+            localStorage.setItem('teleAmp', teleAmp);
+            localStorage.setItem('climb', climb);
+            localStorage.setItem('trap', trap);
+            window.location.href = "matchAndTeam.html";
+            document.getElementsByClassName('switch').reset();
+        }
+    </script>
+</body>
+</html>

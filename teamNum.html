@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Number</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <h1>Enter Team Number</h1>
+    
+    <form id="teamNumForm">
+        <input type="number" id="teamNumInput" placeholder="219" required>
+        <button type="button" onclick="saveTeamNum()">Next</button>
+    </form>
+
+    <script>
+        function saveTeamNum() {
+            if(document.getElementById('teamNumInput') != null){
+                var teamNum = document.getElementById('teamNumInput').value;
+                localStorage.setItem('teamNum', teamNum);
+                window.location.href = "matchAndTeam.html";
+            }
+            document.getElementById('teamNumInput').reset();
+        }
+    </script>
+</body>
+</html>

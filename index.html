@@ -1,33 +1,32 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-    	<style>
-			.button {
-		        padding: 15px 25px;
-		        font-size: 24px;
-		        text-align: center;
-		        cursor: pointer;
-		        outline: none;
-		        color: #fff;
-		        background-color: #04AA6D;
-		        border: none;
-		        border-radius: 15px;
-		        box-shadow: 0 9px #999;
-		      }
-		      
-		      .button:hover {background-color: #3e8e41}
-		      
-		      .button:active {
-		        background-color: #3e8e41;
-		        box-shadow: 0 5px #666;
-		        transform: translateY(4px);
-		      }
-    	</style>
-	</head>
-	<body>
-		<h1>My First Heading</h1>
-    	<p>My first paragraph</p>
-		<button class="button">Click Me</button>
-  	</body>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>219 Scouting</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>219 Scouting</h1>
+    <p>Enter name (like a username)</p>
+    
+    <form id="usernameForm">
+        <input type="text" id="usernameInput" placeholder="Enter your username" required>
+        <button type="button" onclick="saveUsername()">Submit</button>
+    </form>
+
+    <script>
+        function saveUsername() {
+            if(document.getElementById('usernameInput') != null){
+                var username = document.getElementById('usernameInput').value;
+                localStorage.setItem('user', username);
+                window.location.href = "menu.html";
+                document.getElementById('usernameForm').reset();
+
+            }
+        }
+    </script>
+</body>
 </html>

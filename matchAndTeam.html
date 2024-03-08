@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>219 Scouting</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #red {
+            background-color: red;
+        }
+        button {
+            width: 20%;
+            margin-top: 1%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Match and Team Select</h1>
+    
+    
+    <form id="matchNumForm">
+        <input type="number" id="matchNumInput" placeholder="Match Number" required><br>
+        <button id='red' type="submit" onclick="saveMatchNum(this)">Red 1</button>
+        <button id='red' type="submit" onclick="saveMatchNum(this)">Red 2</button>
+        <button id='red' type="submit" onclick="saveMatchNum(this)">Red 3</button><br>
+        <button type="submit" onclick="saveMatchNum(this)">Blue 1</button>
+        <button type="submit" onclick="saveMatchNum(this)">Blue 2</button>
+        <button type="submit" onclick="saveMatchNum(this)">Blue 3</button>
+    </form>
+    <script>
+        function saveMatchNum(button) {
+            if(document.getElementById('matchNumInput') != null){
+                var matchNum = document.getElementById('matchNumInput').value;
+                var teamSelector = button.innerHTML;
+                localStorage.setItem('matchNum', matchNum);
+                localStorage.setItem('teamSelector', teamSelector);
+                window.location.href = "auto.html";
+                document.getElementById('matchNumForm').reset();
+            }
+        }
+    </script>
+</body>
+</html>

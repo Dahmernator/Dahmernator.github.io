@@ -1,1 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>219 Scouting</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .taxi{
+            margin: 1%;
+            background-color: #233dff;
+            margin-left: auto;
+            margin-right: auto;
+            width: 20%;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Auto Events</h1>
+    <p>Click the button for each corresponding shot</p>
+    <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
+    <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button><br>
+    <p class="taxi">Taxi?<input type="checkbox" id="switch" onchange="setTaxi()"></p>
+    <button id="submit" onclick="saveAuto()">Next</button>
+
+
+
+    <script>
+        var autoAmp = 0;
+        var autoSpeaker = 0;
+        var taxi = false;
+
+        function speakerAdd(){
+            autoSpeaker++;
+            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
+        }
+        function ampAdd(){
+            autoAmp++;
+            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
+        }
+        function setTaxi(){
+            taxi = document.getElementById('switch').checked;
+            console.log(taxi);
+        }
+
+        function saveAuto() {
+            localStorage.setItem('autoSpeaker', autoSpeaker)
+            localStorage.setItem('autoAmp', autoAmp);
+            localStorage.setItem('taxi', taxi)
+            window.location.href = "teleop.html";
+            document.getElementById('switch').reset();
+        }
+    </script>
+</body>
+</html>
 

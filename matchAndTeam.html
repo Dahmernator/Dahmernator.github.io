@@ -23,7 +23,6 @@
     
     <form id="matchNumForm">
         <input type="number" id="teamNumInput" placeholder="219" required>
-        <button type="button" onclick="saveTeamNum()">Next</button>
         <input type="number" id="matchNumInput" placeholder="Match Number" required><br>
         <button id='red' type="submit" onclick="saveMatchNum(this)">Red 1</button>
         <button id='red' type="submit" onclick="saveMatchNum(this)">Red 2</button>
@@ -33,18 +32,12 @@
         <button type="submit" onclick="saveMatchNum(this)">Blue 3</button>
     </form>
     <script>
-        function saveTeamNum() {
-            if(document.getElementById('teamNumInput') != null){
-                var teamNum = document.getElementById('teamNumInput').value;
-                localStorage.setItem('teamNum', teamNum);
-                window.location.href = "matchAndTeam.html";
-            }
-            document.getElementById('teamNumInput').reset();
-        }
         function saveMatchNum(button) {
             if(document.getElementById('matchNumInput') != null){
+                var teamNum = document.getElementById('teamNumInput').value;
                 var matchNum = document.getElementById('matchNumInput').value;
                 var teamSelector = button.innerHTML;
+                localStorge.setItem('teamNum', teamNum);
                 localStorage.setItem('matchNum', matchNum);
                 localStorage.setItem('teamSelector', teamSelector);
                 window.location.href = "auto.html";

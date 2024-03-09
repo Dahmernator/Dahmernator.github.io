@@ -40,8 +40,11 @@
                 localStorge.setItem('teamNum', teamNum);
                 localStorage.setItem('matchNum', matchNum);
                 localStorage.setItem('teamSelector', teamSelector);
-                window.location.href = "auto.html";
                 document.getElementById('matchNumForm').reset();
+                nextPage();
+            }
+            function nextPage(){
+                window.location.href = "auto.html";
             }
         }
     </script>

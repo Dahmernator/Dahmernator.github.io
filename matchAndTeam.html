@@ -18,19 +18,21 @@
 </head>
 
 <body>
-    <h1>Match and Team Select</h1>
-    
-    
-    <form id="matchNumForm">
-        <input type="number" id="teamNumInput" placeholder="219" required>
-        <input type="number" id="matchNumInput" placeholder="Match Number" required><br>
-        <button id='red' type="submit" onclick="saveMatchNum(this)">Red 1</button>
-        <button id='red' type="submit" onclick="saveMatchNum(this)">Red 2</button>
-        <button id='red' type="submit" onclick="saveMatchNum(this)">Red 3</button><br>
-        <button type="submit" onclick="saveMatchNum(this)">Blue 1</button>
-        <button type="submit" onclick="saveMatchNum(this)">Blue 2</button>
-        <button type="submit" onclick="saveMatchNum(this)">Blue 3</button>
-    </form>
+    <div class="content">
+        <h1>Match and Team Select</h1>
+        
+        
+        <form id="matchNumForm">
+            <input type="number" id="teamNumInput" placeholder="219" required>
+            <input type="number" id="matchNumInput" placeholder="Match Number" required><br>
+            <button id='red' type="submit" onclick="saveMatchNum(this)">Red 1</button>
+            <button id='red' type="submit" onclick="saveMatchNum(this)">Red 2</button>
+            <button id='red' type="submit" onclick="saveMatchNum(this)">Red 3</button><br>
+            <button type="submit" onclick="saveMatchNum(this)">Blue 1</button>
+            <button type="submit" onclick="saveMatchNum(this)">Blue 2</button>
+            <button type="submit" onclick="saveMatchNum(this)">Blue 3</button>
+        </form>
+    </div>
     <script>
         function saveMatchNum(button) {
             if(document.getElementById('matchNumInput') != null){

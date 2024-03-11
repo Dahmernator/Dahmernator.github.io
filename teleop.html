@@ -30,8 +30,7 @@
         <button id="submit" onclick="saveTele()">Next</button>
     </div>
 
-    <script src=
-        "https://www.gstatic.com/firebasejs/3.7.4/firebase.js">
+    <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js">
     </script>
     <script>
         const firebaseConfig = {
@@ -68,7 +67,6 @@
         }
 
         function saveTele() {
-            console.log('hi');
             localStorage.setItem('teleSpeaker', teleSpeaker)
             localStorage.setItem('teleAmp', teleAmp);
             localStorage.setItem('climb', climb);
@@ -78,7 +76,7 @@
             sendData();
         }
         function sendData(){
-        
+            console.log("sent data");
             let messagesRef = firebase.database().ref('Team Numbers');
 
             var teamNum = "Team " + localStorage.getItem('teamNum');

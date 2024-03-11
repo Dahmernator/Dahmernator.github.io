@@ -32,6 +32,19 @@
 
 
     <script>
+        const firebaseConfig = {
+              apiKey: "AIzaSyASXLHpmWu4nMLWHah1YlDxaZh2enuw33c",
+              authDomain: "frcscouting-1c70f.firebaseapp.com",
+              databaseURL: "https://frcscouting-1c70f-default-rtdb.firebaseio.com",
+              projectId: "frcscouting-1c70f",
+              storageBucket: "frcscouting-1c70f.appspot.com",
+              messagingSenderId: "958167429133",
+              appId: "1:958167429133:web:ea828d3023d70d80586544",
+              measurementId: "G-00DHFPGHM4"
+            };
+
+        firebase.initializeApp(firebaseConfig);
+        
         var teleSpeaker = 0;
         var teleAmp = 0;
         var climb = false;
@@ -60,7 +73,37 @@
             localStorage.setItem('trap', trap);
             window.location.href = "menu.html";
             document.getElementsByClassName('switch').reset();
+            sendData();
         }
+        sendData(){
+        
+            let messagesRef = firebase.database().ref('Team Numbers');
+
+            var teamNum = "Team " + localStorage.getItem('teamNum');
+            var matchNum = "Match " + localStorage.getItem('matchNum');
+            var teamSelector = localStorage.getItem('teamSelector');
+            var autoSpeaker = localStorage.getItem('autoSpeaker');
+            var autoAmp = localStorage.getItem('autoAmp');
+            var taxi = localStorage.getItem('taxi');
+            var speaker = localStorage.getItem('teleSpeaker');
+            var amp = localStorage.getItem('teleAmp');
+            var climb = localStorage.getItem('climb');
+            var trap = localStorage.getItem('trap');
+            
+            let newMessageRef = messagesRef.child(teamNum).child(matchNum);
+            newMessageRef.set({
+            teamSelector: teamSelector,
+            autoSpeaker: autoSpeaker,
+            autoAmp: autoAmp,
+            taxi: taxi,
+            speaker: speaker,
+            amp: amp,
+            climb: climb,
+            trap: trap,
+            })
+
+        }
+            
     </script>
 </body>
 </html>

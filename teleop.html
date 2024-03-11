@@ -45,7 +45,9 @@
             };
 
         firebase.initializeApp(firebaseConfig);
-        
+
+        let messagesRef = firebase.database().ref('Team Numbers');
+
         var teleSpeaker = 0;
         var teleAmp = 0;
         var climb = false;
@@ -77,7 +79,6 @@
         }
         function sendData(){
             console.log("sent data");
-            let messagesRef = firebase.database().ref('Team Numbers');
 
             var teamNum = "Team " + localStorage.getItem('teamNum');
             var matchNum = "Match " + localStorage.getItem('matchNum');

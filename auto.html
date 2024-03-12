@@ -23,11 +23,9 @@
         <h1>Auto Events</h1>
         <p>Click the button for each corresponding shot</p>
         <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
-        <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button><br>
-        
-        <button id="speakerBtn" onclick="speakerSub()">-1 Speaker</button>
-        <button id="ampBtn" onclick="ampSub()">-1 Amp</button><br>
-        
+        <button id="subSpeaker" onclick="speakerSub()">-1 Speaker</button><br>
+        <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button>
+        <button id="subAmp" onclick="ampSub()">-1 Amp</button><br>
         <p class="taxi">Taxi?<input type="checkbox" id="switch" onchange="setTaxi()"></p>
         <button id="submit" onclick="saveAuto()">Next</button>
     </div>

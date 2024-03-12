@@ -24,6 +24,10 @@
         <p>Click the button for each corresponding shot</p>
         <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
         <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button><br>
+        //
+        <button id="speakerBtnUndo" onclick="speakerSub()">Speaker Shots: 0</button>
+        <button id="ampBtnUndo" onclick="ampSub()">Amp Shots: 0</button><br
+        //
         <p>Climb?<input type="checkbox" id="climbSwitch" onchange="setClimb()"></p>
         <p>Trap?<input type="checkbox" id="parkSwitch" onchange="setTrap()"></p>
     
@@ -54,13 +58,27 @@
         var trap = false;
 
         function speakerAdd(){
-            teleSpeaker++;
+            speaker = 1;
+            teleSpeaker = teleSpeaker + speaker;
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
         }
         function ampAdd(){
-            teleAmp++;
+            amp = 1;
+            teleAmp = teleAmp + amp;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
         }
+        // //
+        function speakerSub(){
+            speaker = -1;
+             teleSpeaker = teleSpeaker - speaker;
+             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
+         }
+         function speakerSub(){
+             amp = -1
+             teleAmp = teleAmp + amp;
+             document.getElementById('speakerBtn').innerHTML = "Amp Shots: " + teleAmp;
+         }
+        // //
         function setClimb(){
             climb = document.getElementById('climbSwitch').checked;
         }

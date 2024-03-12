@@ -24,6 +24,10 @@
         <p>Click the button for each corresponding shot</p>
         <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
         <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button><br>
+        //
+        <button id="speakerBtn" onclick="speakerSub()">-1 Speaker</button>
+        <button id="ampBtn" onclick="ampSub()">-1 Amp</button><br>
+        //
         <p class="taxi">Taxi?<input type="checkbox" id="switch" onchange="setTaxi()"></p>
         <button id="submit" onclick="saveAuto()">Next</button>
     </div>
@@ -35,13 +39,27 @@
         var taxi = false;
 
         function speakerAdd(){
-            autoSpeaker++;
+            speakerAuto = 1;
+            autoSpeaker = autoSpeaker + ampAuto;
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
         }
         function ampAdd(){
-            autoAmp++;
+            ampAuto = 1;
+            autoAmp = autoAmp + ampAuto;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
         }
+        //
+        function speakerSub(){
+            speakerAuto = 1;
+            autoSpeaker = autoSpeaker - speakerAuto;
+            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
+        }
+        function ampSub(){
+            ampAuto = 1;
+            autoAmp = autoAmp - ampAuto;
+            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
+        }
+        //    
         function setTaxi(){
             taxi = document.getElementById('switch').checked;
         }

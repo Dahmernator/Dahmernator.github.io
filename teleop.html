@@ -52,29 +52,23 @@
 
         var teleSpeaker = 0;
         var teleAmp = 0;
-        var amp = 0;
-        var speaker = 0;
         var climb = false;
         var trap = false;
 
-        function speakerAdd(){
-            speaker = 1;
-            teleSpeaker = teleSpeaker + speaker;
+        function speakerAdd(){;
+            teleSpeaker = teleSpeaker + 1;
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
         }
         function ampAdd(){
-            amp = 1;
-            teleAmp = teleAmp + amp;
+            teleAmp = teleAmp + 1;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
         }
         function speakerSub(){
-            speaker = 1
-            teleSpeaker = teleSpeaker - speaker;
+            teleSpeaker = teleSpeaker - 1;
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
         }
         function ampSub(){
-            amp = 1
-            teleAmp = teleAmp - amp;
+            teleAmp = teleAmp - 1;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
         }
         function setClimb(){

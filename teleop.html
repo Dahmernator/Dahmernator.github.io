@@ -14,7 +14,6 @@
             margin-right: auto;
             width: 20%;
             color: white;
-            border-radius: 10px;
         }
     </style>
 </head>
@@ -24,7 +23,9 @@
         <h1>Teleop Events</h1>
         <p>Click the button for each corresponding shot</p>
         <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
+        <button id="speakerBtn" onclick="speakerSub()">-1 Speaker</button>
         <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button><br>
+        <button id="ampBtn" onclick="ampSub()">-1 Amp</button><br>
         <p class = "switch">Climb?<input type="checkbox" id="climbSwitch" onchange="setClimb()"></p>
         <p class="switch">Trap?<input type="checkbox" id="parkSwitch" onchange="setTrap()"></p>
     
@@ -51,6 +52,8 @@
 
         var teleSpeaker = 0;
         var teleAmp = 0;
+        var amp = 0;
+        var speaker = 0;
         var climb = false;
         var trap = false;
 
@@ -62,6 +65,16 @@
         function ampAdd(){
             amp = 1;
             teleAmp = teleAmp + amp;
+            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
+        }
+        function speakerSub(){
+            speaker = 1
+            teleSpeaker = teleSpeaker - speaker;
+            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
+        }
+        function ampSub(){
+            amp = 1
+            teleAmp = teleAmp - amp;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
         }
         function setClimb(){

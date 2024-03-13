@@ -37,15 +37,14 @@
         var autoSpeaker = 0;
         var taxi = false;
 
-        function speakerAdd(){
-            autoSpeaker = autoSpeaker + 1;
-            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
-        }
         function ampAdd(){
             autoAmp = autoAmp + 1;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
         }
-        
+        function speakerAdd(){
+            autoSpeaker = autoSpeaker + 1;
+            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
+        }
         function speakerSub(){
             autoSpeaker = autoSpeaker - 1;
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;

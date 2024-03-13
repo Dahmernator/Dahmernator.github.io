@@ -35,29 +35,23 @@
     <script>
         var autoAmp = 0;
         var autoSpeaker = 0;
-        var ampAuto = 0;
-        var speakerAuto = 0;
         var taxi = false;
 
         function speakerAdd(){
-            speakerAuto = 1;
-            autoSpeaker = autoSpeaker + ampAuto;
+            autoSpeaker = autoSpeaker + 1;
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
         }
         function ampAdd(){
-            ampAuto = 1;
-            autoAmp = autoAmp + ampAuto;
+            autoAmp = autoAmp + 1;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
         }
         
         function speakerSub(){
-            speakerAuto = 1;
-            autoSpeaker = autoSpeaker - speakerAuto;
+            autoSpeaker = autoSpeaker - 1;
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
         }
         function ampSub(){
-            ampAuto = 1;
-            autoAmp = autoAmp - ampAuto;
+            autoAmp = autoAmp - 1;
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
         }
             

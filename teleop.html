@@ -14,6 +14,7 @@
             margin-right: auto;
             width: 20%;
             color: white;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -22,10 +23,10 @@
     <div class="content">
         <h1>Teleop Events</h1>
         <p>Click the button for each corresponding shot</p>
-        <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
-        <button id="speakerBtn" onclick="speakerSub()">-1 Speaker</button>
-        <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button>
-        <button id="ampBtn" onclick="ampSub()">-1 Amp</button><br>
+        <button id="speakerBtn" onclick="speakerAdd(1)">Speaker Shots: 0</button>
+        <button id="ampBtn" onclick="ampAdd(1)">Amp Shots: 0</button><br>
+        <button id="sub" onclick="speakerAdd(-1)">Speaker -1</button>
+        <button id="sub" onclick="ampAdd(-1)">Amp -1</button>
         <p class = "switch">Climb?<input type="checkbox" id="climbSwitch" onchange="setClimb()"></p>
         <p class="switch">Trap?<input type="checkbox" id="parkSwitch" onchange="setTrap()"></p>
     
@@ -55,20 +56,16 @@
         var climb = false;
         var trap = false;
 
-        function speakerAdd(){;
-            teleSpeaker = teleSpeaker + 1;
+        function speakerAdd(num){
+            if(teleSpeaker + num >= 0){
+                teleSpeaker += num;
+            }
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
         }
-        function ampAdd(){
-            teleAmp = teleAmp + 1;
-            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
-        }
-        function speakerSub(){
-            teleSpeaker = teleSpeaker - 1;
-            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + teleSpeaker;
-        }
-        function ampSub(){
-            teleAmp = teleAmp - 1;
+        function ampAdd(num){
+            if(teleAmp + num >= 0){
+                teleAmp += num;
+            }
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + teleAmp;
         }
         function setClimb(){
@@ -99,20 +96,19 @@
             var amp = localStorage.getItem('teleAmp');
             var climb = localStorage.getItem('climb');
             var trap = localStorage.getItem('trap');
-            var user = localStorage.getItem('user');
             
             let newMessageRef = messagesRef.child(teamNum).child(matchNum);
             newMessageRef.set({
-            teamSelector: teamSelector,
-            autoSpeaker: autoSpeaker,
-            autoAmp: autoAmp,
-            taxi: taxi,
-            speaker: speaker,
-            amp: amp,
-            climb: climb,
-            trap: trap,
-            user: user,
+            HteamSelector: teamSelector,
+            AautoSpeaker: autoSpeaker,
+            BautoAmp: autoAmp,
+            Gtaxi: taxi,
+            Cspeaker: speaker,
+            Damp: amp,
+            Eclimb: climb,
+            Ftrap: trap,
             });
+
         }
             
     </script>

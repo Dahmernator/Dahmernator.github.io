@@ -14,7 +14,7 @@
             margin-right: auto;
             width: 20%;
             color: white;
-            border-radius: 10px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -23,10 +23,10 @@
     <div class="content">
         <h1>Auto Events</h1>
         <p>Click the button for each corresponding shot</p>
-        <button id="speakerBtn" onclick="speakerAdd()">Speaker Shots: 0</button>
-        <button id="subSpeaker" onclick="speakerSub()">-1 Speaker</button><br>
-        <button id="ampBtn" onclick="ampAdd()">Amp Shots: 0</button>
-        <button id="subAmp" onclick="ampSub()">-1 Amp</button><br>
+        <button id="speakerBtn" onclick="speakerAdd(1)">Speaker Shots: 0</button>
+        <button id="ampBtn" onclick="ampAdd(1)">Amp Shots: 0</button><br>
+        <button id="sub" onclick="speakerAdd(-1)">Speaker -1</button>
+        <button id="sub" onclick="ampAdd(-1)">Amp -1</button>
         <p class="taxi">Taxi?<input type="checkbox" id="switch" onchange="setTaxi()"></p>
         <button id="submit" onclick="saveAuto()">Next</button>
     </div>
@@ -37,34 +37,28 @@
         var autoSpeaker = 0;
         var taxi = false;
 
-        function ampAdd(){
-            autoAmp = autoAmp + 1;
-            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
-        }
-        function speakerAdd(){
-            autoSpeaker = autoSpeaker + 1;
+        function speakerAdd(num){
+            if(autoSpeaker + num >= 0){
+                autoSpeaker += num;
+            }
             document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
         }
-        function speakerSub(){
-            autoSpeaker = autoSpeaker - 1;
-            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
-        }
-        function ampSub(){
-            autoAmp = autoAmp - 1;
+        function ampAdd(num){
+            if(autoAmp + num >= 0){
+                autoAmp += num;
+            }
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
         }
-            
         function setTaxi(){
             taxi = document.getElementById('switch').checked;
         }
 
         function saveAuto() {
-            localStorage.setItem('autoSpeaker', autoSpeaker);
+            localStorage.setItem('autoSpeaker', autoSpeaker)
             localStorage.setItem('autoAmp', autoAmp);
-            localStorage.setItem('taxi', taxi);
+            localStorage.setItem('taxi', taxi)
             window.location.href = "teleop.html";
         }
     </script>
 </body>
 </html>
-

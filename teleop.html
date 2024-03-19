@@ -96,17 +96,20 @@
             var amp = localStorage.getItem('teleAmp');
             var climb = localStorage.getItem('climb');
             var trap = localStorage.getItem('trap');
+            var user = localStorage.getItem('user');
+
             
             let newMessageRef = messagesRef.child(teamNum).child(matchNum);
             newMessageRef.set({
-            HteamSelector: teamSelector,
-            AautoSpeaker: autoSpeaker,
-            BautoAmp: autoAmp,
-            Gtaxi: taxi,
-            Cspeaker: speaker,
-            Damp: amp,
-            Eclimb: climb,
-            Ftrap: trap,
+            user: user,
+            tteamSelector: teamSelector,
+            autoSpeaker: autoSpeaker,
+            autoAmp: autoAmp,
+            taxi: taxi,
+            speaker: speaker,
+            amp: amp,
+            climb: climb,
+            trap: trap,
             });
 
         }

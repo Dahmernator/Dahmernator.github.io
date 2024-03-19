@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>219 Scouting</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.datatables.net/v/dt/dt-2.0.2/fc-5.0.0/fh-4.0.1/r-3.0.0/rg-1.5.0/datatables.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        table, th, td{
+            border:1px solid black;
+        }
+        th {
+        white-space: nowrap; /* Prevent wrapping */
+        overflow: hidden; /* Hide overflow content */
+        text-overflow: ellipsis; /* Show ellipsis (...) for overflow text */
+        }
+        .table-container {
+        overflow-x: auto;
+        position: relative;
+        width: 100%;
+        }
+
+        .fixed-column {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: white; /* Optionally set the background color */
+        border-collapse: collapse; /* Ensure cells don't have spacing */
+        width: 100px;
+        }
+
+        .scrollable-table {
+        overflow-x: auto;
+        overflow-y: auto;
+        margin-left: 100px;
+        height: 400px;
+        }
+
+        .data-table {
+        border-collapse: collapse;
+        width: 100%;
+        }
+        button{
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="table-container">
+            <table class="fixed-column">
+                <thead></thead>
+                <tbody>
+                    <!-- Fixed column rows will be dynamically added here -->
+                </tbody>
+            </table>
+            <div class="scrollable-table">
+                <table class="data-table">
+                    <thead></thead>
+                    <tbody>
+                        <!-- Scrollable table rows will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <button type="submit" onclick="back()">Back to Menu</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-2.0.2/fc-5.0.0/fh-4.0.1/r-3.0.0/rg-1.5.0/datatables.min.js"></script>
+
+    <script>
+        var teamStatGuide = ["teamNum", "matches", "totalAutoAmp", "totalAutoSpeaker", "totalAmp", "totalSpeaker", "averageAutoAmp", "averageAutoSpeaker", "averageAmp", "averageSpeaker", "taxiPercent", "climbPercent", "trapPercent"];
+        var tableHeaders = ["teamNum", "matches", "totalAutoAmp", "totalAutoSpeaker", "totalAmp", "totalSpeaker", "averageAutoAmp", "averageAutoSpeaker", "averageAmp", "averageSpeaker", "taxiPercent", "climbPercent", "trapPercent"];
+        //if you want to change the text of the headers do it here, if you want to change to order talk to robert, only change tableHeaders
+        const firebaseConfig = {
+            apiKey: "AIzaSyASXLHpmWu4nMLWHah1YlDxaZh2enuw33c",
+            authDomain: "frcscouting-1c70f.firebaseapp.com",
+            databaseURL: "https://frcscouting-1c70f-default-rtdb.firebaseio.com",
+            projectId: "frcscouting-1c70f",
+            storageBucket: "frcscouting-1c70f.appspot.com",
+            messagingSenderId: "958167429133",
+            appId: "1:958167429133:web:ea828d3023d70d80586544",
+            measurementId: "G-00DHFPGHM4"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        var teams = firebase.database().ref('Team Numbers');
+
+        async function displayTeamData() {
+            try {
+                const allTeamData = await readData();
+                const avgTeamData = averageData(allTeamData);
+                console.log(avgTeamData);
+                addHeaders();
+                for(var q = 0; q < avgTeamData.length; q++){
+                    addRow(avgTeamData[q]);
+                }
+            } catch (error) {
+                console.error('Error fetching and processing data:', error);
+            }
+        }
+
+        function readData() {
+            return new Promise((resolve, reject) => {
+                const teamData = [];
+                teams.once('value', (snapshot) => {
+                    const data = snapshot.val();
+                    for (const x in data) {
+                        const teamObj = data[x];
+                        const teamStatsArr = [x];
+                        for (const y in teamObj) {
+                            const matchObj = teamObj[y];
+                            const matchStatsArr = [y];
+                            for (const z in matchObj) {
+                                const gameObj = matchObj[z];
+                                matchStatsArr.push(gameObj);
+                            }
+                            teamStatsArr.push(matchStatsArr);
+                        }
+                        teamData.push(teamStatsArr);
+                    }
+                    resolve(teamData);
+                }, (error) => {
+                    reject(error);
+                });
+            });
+        }
+        
+        function averageData(data) {
+            var totalStats = [];
+            for(var i = 0; i < data.length; i++){//goes through teams
+                var teamStats = [0, 0, 0, 0, 0, 0, 0, 0];
+                for(var j = 1; j < data[i].length; j++){//goes through each match per team
+                    teamStats[0] += 1;
+                    teamStats[1] += parseInt(data[i][j][1]);//amp
+                    teamStats[2] += parseInt(data[i][j][2]);//autoAmp
+                    teamStats[3] += parseInt(data[i][j][3]);//autoSpeaker
+                    teamStats[4] += boolNum(data[i][j][4]);//climb
+                    teamStats[5] += parseInt(data[i][j][5]);//speaker
+                    teamStats[6] += boolNum(data[i][j][6]);//taxi
+                    teamStats[7] += boolNum(data[i][j][7]);//trap  
+                };
+                totalStats.push(teamStats);
+            }
+            var allTeamStats = [];
+            for(var w = 0; w < data.length; w++){
+                var tempStatObj = {
+                    teamNum: data[w][0],
+                    matches: totalStats[w][0],
+                    totalAutoAmp: totalStats[w][2],
+                    totalAutoSpeaker: totalStats[w][3],
+                    totalAmp: totalStats[w][1],
+                    totalSpeaker: totalStats[w][5],
+                    averageAutoAmp: (totalStats[w][2]/totalStats[w][0]).toFixed(2),
+                    averageAutoSpeaker: (totalStats[w][3]/totalStats[w][0]).toFixed(2),
+                    averageAmp: (totalStats[w][1]/totalStats[w][0]).toFixed(2),
+                    averageSpeaker: (totalStats[w][5]/totalStats[w][0]).toFixed(2),
+                    taxiPercent: ((totalStats[w][6]/totalStats[w][0])*100).toFixed(2) + "%",//times/n matches
+                    climbPercent: ((totalStats[w][4]/totalStats[w][0])*100).toFixed(2) + "%",
+                    trapPercent: ((totalStats[w][7]/totalStats[w][0])*100).toFixed(2) + "%"
+                };
+                allTeamStats.push(tempStatObj);
+            }
+            return allTeamStats;
+        }
+        function addHeaders(){
+            var fixedHeader = document.querySelector('.fixed-column thead');
+            var scrollHeader = document.querySelector('.data-table thead');
+
+            var newFixedHeaderRow = document.createElement('tr');
+            var newScrollHeaderRow = document.createElement('tr');
+
+            var fixedHeaderCell = document.createElement('th');
+            fixedHeaderCell.textContent = tableHeaders[0];
+            newFixedHeaderRow.appendChild(fixedHeaderCell);
+
+            for(var i = 1; i < teamStatGuide.length; i++){
+                var cell = document.createElement('th');
+                cell.textContent = tableHeaders[i];
+                newScrollHeaderRow.appendChild(cell);
+            }
+            fixedHeader.appendChild(newFixedHeaderRow);
+            scrollHeader.appendChild(newScrollHeaderRow);
+        }
+        function addRow(obj){
+            var fixedColumn = document.querySelector('.fixed-column tbody');
+            var scrollColumn = document.querySelector('.data-table tbody');
+
+            var newFixedRow = document.createElement('tr');
+            var newScrollRow = document.createElement('tr');
+
+            var fixedColumnCell = document.createElement('td');
+            fixedColumnCell.textContent = obj[teamStatGuide[0]];
+            newFixedRow.appendChild(fixedColumnCell);
+
+            for(var i = 1; i < Object.keys(obj).length; i++){
+                var cell = document.createElement('td');
+                cell.textContent = obj[teamStatGuide[i]];
+                newScrollRow.appendChild(cell);
+            }
+
+            fixedColumn.appendChild(newFixedRow);
+            scrollColumn.appendChild(newScrollRow);
+        }
+        function boolNum(bool){
+            if(bool == "true"){
+                return 1;
+            }
+            return 0;
+        }
+        function back(){
+            window.location.href = 'menu.html';
+        }
+        displayTeamData();
+    </script>
+</body>
+</html> 

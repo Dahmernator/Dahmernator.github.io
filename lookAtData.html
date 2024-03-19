@@ -137,13 +137,13 @@
                 var teamStats = [0, 0, 0, 0, 0, 0, 0, 0];
                 for(var j = 1; j < data[i].length; j++){//goes through each match per team
                     teamStats[0] += 1;
-                    teamStats[1] += parseInt(data[i][j][1]);//amp
+                    teamStats[1] += parseInt(data[i][j][4]);//amp
                     teamStats[2] += parseInt(data[i][j][2]);//autoAmp
-                    teamStats[3] += parseInt(data[i][j][3]);//autoSpeaker
-                    teamStats[4] += boolNum(data[i][j][4]);//climb
-                    teamStats[5] += parseInt(data[i][j][5]);//speaker
-                    teamStats[6] += boolNum(data[i][j][6]);//taxi
-                    teamStats[7] += boolNum(data[i][j][7]);//trap  
+                    teamStats[3] += parseInt(data[i][j][1]);//autoSpeaker
+                    teamStats[4] += boolNum(data[i][j][5]);//climb
+                    teamStats[5] += parseInt(data[i][j][3]);//speaker
+                    teamStats[6] += boolNum(data[i][j][7]);//taxi
+                    teamStats[7] += boolNum(data[i][j][6]);//trap  
                 };
                 totalStats.push(teamStats);
             }

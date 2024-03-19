@@ -2,7 +2,7 @@
     max-width: 700px;
     margin: auto;
     background: white;
-    padding: 20px;
+    padding: 10px;
 }
 #sub{
     font-size: 10px;
@@ -12,7 +12,7 @@ body {
     font-family: Arial, sans-serif;
     background-color: rgb(123, 182, 255);
     text-align: center;
-    padding: 50px;
+    padding: 20px;
 }
 
 h1 {

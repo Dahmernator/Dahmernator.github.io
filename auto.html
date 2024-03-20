@@ -33,19 +33,20 @@
 
 
     <script>
-        console.log(document.querySelectorAll(".pickTeam"));
+        console.log();
         teamColor = localStorage.getItem('teamSelector');
         teamColor.trim();
-    teamColor.slice(0, teamColor.indexOf(' ').toLowerCase();
+        teamColor.slice(0, teamColor.indexOf(' ').toLowerCase();
         console.log(teamColor);
         changeButtonColor(teamColor);
         var autoAmp = 0;
         var autoSpeaker = 0;
         var taxi = false;
         function changeButtonColor(color) {
-          buttons.forEach(button => {
-            button.style.backgroundColor = color;
-          });
+            var buttons = document.querySelectorAll(".pickTeam");
+            buttons.forEach(button => {
+                button.style.backgroundColor = color;
+            });
         }
         function speakerAdd(num){
             if(autoSpeaker + num >= 0){

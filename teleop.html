@@ -59,7 +59,6 @@
         teamColor = localStorage.getItem('teamSelector');
         teamColor.trim();
         teamColor = teamColor.slice(0, teamColor.indexOf(' ')).toLowerCase();
-        console.log(teamColor);
         changeButtonColor(teamColor);    
         function changeButtonColor(color) {
             var buttons = document.querySelectorAll(".pickTeam");
@@ -98,7 +97,7 @@
         function sendData(){
             console.log("sent data");
 
-            var teamNum = "Team " + localStorage.getItem('teamNum');
+            var teamNum = localStorage.getItem('teamNum');
             var matchNum = "Match " + localStorage.getItem('matchNum');
             var teamSelector = localStorage.getItem('teamSelector');
             var autoSpeaker = localStorage.getItem('autoSpeaker');

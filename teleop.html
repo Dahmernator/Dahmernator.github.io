@@ -23,12 +23,12 @@
     <div class="content">
         <h1>Teleop Events</h1>
         <p>Click the button for each corresponding shot</p>
-        <button id="speakerBtn" onclick="speakerAdd(1)">Speaker Shots: 0</button>
-        <button id="ampBtn" onclick="ampAdd(1)">Amp Shots: 0</button><br>
-        <button id="sub" onclick="speakerAdd(-1)">Speaker -1</button>
-        <button id="sub" onclick="ampAdd(-1)">Amp -1</button>
-        <p class = "switch">Climb?<input type="checkbox" id="climbSwitch" onchange="setClimb()"></p>
-        <p class="switch">Trap?<input type="checkbox" id="parkSwitch" onchange="setTrap()"></p>
+        <button class="pickTeam" id="speakerBtn" onclick="speakerAdd(1)">Speaker Shots: 0</button>
+        <button class="pickTeam" id="ampBtn" onclick="ampAdd(1)">Amp Shots: 0</button><br>
+        <button class="pickTeam" id="sub" onclick="speakerAdd(-1)">Speaker -1</button>
+        <button class="pickTeam" id="sub" onclick="ampAdd(-1)">Amp -1</button>
+        <p class = "switch pickTeam">Climb?<input type="checkbox" id="climbSwitch" onchange="setClimb()"></p>
+        <p class="switch pickTeam">Trap?<input type="checkbox" id="parkSwitch" onchange="setTrap()"></p>
     
         <button id="submit" onclick="saveTele()">Next</button>
     </div>
@@ -56,6 +56,18 @@
         var climb = false;
         var trap = false;
 
+        teamColor = localStorage.getItem('teamSelector');
+        teamColor.trim();
+        teamColor = teamColor.slice(0, teamColor.indexOf(' ')).toLowerCase();
+        console.log(teamColor);
+        changeButtonColor(teamColor);    
+        function changeButtonColor(color) {
+            var buttons = document.querySelectorAll(".pickTeam");
+            buttons.forEach(button => {
+                button.style.backgroundColor = color;
+            });
+        }
+        
         function speakerAdd(num){
             if(teleSpeaker + num >= 0){
                 teleSpeaker += num;

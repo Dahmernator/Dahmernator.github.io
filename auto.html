@@ -23,16 +23,17 @@
     <div class="content">
         <h1>Auto Events</h1>
         <p>Click the button for each corresponding shot</p>
-        <button id="speakerBtn" onclick="speakerAdd(1)">Speaker Shots: 0</button>
-        <button id="ampBtn" onclick="ampAdd(1)">Amp Shots: 0</button><br>
-        <button id="sub" onclick="speakerAdd(-1)">Speaker -1</button>
-        <button id="sub" onclick="ampAdd(-1)">Amp -1</button>
-        <p class="taxi">Taxi?<input type="checkbox" id="switch" onchange="setTaxi()"></p>
-        <button id="submit" onclick="saveAuto()">Next</button>
+        <button class="pickTeam" id="speakerBtn" onclick="speakerAdd(1)">Speaker Shots: 0</button>
+        <button class="pickTeam" id="ampBtn" onclick="ampAdd(1)">Amp Shots: 0</button><br>
+        <button class="pickTeam" id="sub" onclick="speakerAdd(-1)">Speaker -1</button>
+        <button class="pickTeam" id="sub" onclick="ampAdd(-1)">Amp -1</button>
+        <p class="taxi pickTeam">Taxi?<input type="checkbox" id="switch" onchange="setTaxi()"></p>
+        <button class="pickTeam" id="submit" onclick="saveAuto()">Next</button>
     </div>
 
 
     <script>
+        console.log(document.querySelectorAll(".pickTeam"));
         var autoAmp = 0;
         var autoSpeaker = 0;
         var taxi = false;

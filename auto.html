@@ -36,7 +36,7 @@
         console.log();
         teamColor = localStorage.getItem('teamSelector');
         teamColor.trim();
-        teamColor.slice(0, teamColor.indexOf(' ').toLowerCase());
+        teamColor.slice(0, teamColor.indexOf(' ')).toLowerCase();
         console.log(teamColor);
         changeButtonColor(teamColor);
         var autoAmp = 0;

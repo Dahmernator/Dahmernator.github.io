@@ -195,6 +195,9 @@
             var newScrollRow = document.createElement('tr');
 
             var fixedColumnCell = document.createElement('td');
+             while(obj[teamStatGuide[0]].indexOf("0") == 5){
+                obj[teamStatGuide[0]] = obj[teamStatGuide[0]].slice(0, 5) + obj[teamStatGuide[0]].slice(6);
+            }
             fixedColumnCell.textContent = obj[teamStatGuide[0]];
             newFixedRow.appendChild(fixedColumnCell);
 

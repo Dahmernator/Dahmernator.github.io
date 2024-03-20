@@ -110,6 +110,11 @@
             var trap = localStorage.getItem('trap');
             var user = localStorage.getItem('user');
 
+            while(teamNum.length < 4){
+                teamNum = "0" + teamNum;
+                console.log(teamNum);
+            }
+            teamNum = "Team " + teamNum;
             
             let newMessageRef = messagesRef.child(teamNum).child(matchNum);
             newMessageRef.set({

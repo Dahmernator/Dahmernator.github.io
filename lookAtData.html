@@ -214,6 +214,10 @@
             rows.forEach(function(row, index) {
                 row.style.backgroundColor = index % 2 === 0 ? '#c6e9f7' : 'white'; // Alternating background colors
             });
+            var rows = document.querySelectorAll('.fixed-column tbody tr');
+            rows.forEach(function(row, index) {
+                row.style.backgroundColor = index % 2 === 0 ? '#c6e9f7' : 'white'; // Alternating background colors
+            });
         }
         function boolNum(bool){
             if(bool == "true"){

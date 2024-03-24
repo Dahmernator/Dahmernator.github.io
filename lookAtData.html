@@ -12,9 +12,6 @@
         table, th, td{
             border:1px solid black;
         }
-        .fixed-column .data-table tbody tr:nth-child(even) {
-            background-color: #c6e9f7; /* Light gray background color */
-        }
         th {
         white-space: nowrap; /* Prevent wrapping */
         overflow: hidden; /* Hide overflow content */
@@ -212,6 +209,11 @@
 
             fixedColumn.appendChild(newFixedRow);
             scrollColumn.appendChild(newScrollRow);
+
+            var rows = document.querySelectorAll('.data-table tbody tr');
+            rows.forEach(function(row, index) {
+                row.style.backgroundColor = index % 2 === 0 ? '#c6e9f7' : 'white'; // Alternating background colors
+            });
         }
         function boolNum(bool){
             if(bool == "true"){

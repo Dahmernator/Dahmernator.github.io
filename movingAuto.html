@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +45,15 @@
             left: 165px;/* Halfway == (container_width-bot_width)/2 == 350 - width/2 */
             top: 0px;/* Stays on top */
         }
+        .noAuto{
+            margin: 1%;
+            background-color: #233dff;
+            margin-left: auto;
+            margin-right: auto;
+            width: 35%;
+            color: white;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -74,15 +84,21 @@
         <div id="bot"></div>
     </div>
     <div class="content" style="height: auto; width: 350px;">
-        <button type="button" onclick="resetBotMovement()">Reset Start Pos</button>
-        <button type="button" onclick="animateBot()">Animate</button>
-        <button type="button">Next</button>
+        <p class="noAuto">No Auto<input type="checkbox" id="noAuto" onchange='noAuto()'></p>
+        <form>
+            <button type="button" id="timing" onclick="timing(1)">Time Left: 0 seconds</button>
+            <button type="button" id="sub" onclick="timing(-1)">Time -1</button>
+            <button type="button" onclick="resetBotMovement()">Reset Start Pos</button>
+            <button type="button" onclick="animateBot()">Animate</button>
+            <button type="button">Next</button>
+        </form>
     </div>
     <script>
         var bot = document.getElementById('bot');
         var movingBot = true;//when clicking it will move the bot
         var moved = true;
         var clicks = [];
+        var noAutoBool = false;
         function resetBotMovement(){
             clicks = [];
             movingBot = true;
@@ -141,12 +157,26 @@
                 return
             }else{
                 clicks.push([fieldX, fieldY]);
-                console.log(clicks, "clicks");
+                //console.log(clicks, "clicks");
             }
             
         }
+        function noAuto(){
+            noAutoBool = document.getElementById('noAuto').checked;
+            if(noAutoBool){
+                document.getElementById('timing').innerHTML = "Time Left: 15 seconds"
+            }else{
+                document.getElementById('timing').innerHTML = "Time Left: 0 seconds"
+            }
+        }
         function animateBot(){
 
+        }
+        function timing(num){
+            if(timeLeft + num >= 0){
+                timeLeft += num;
+            }
+            document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
         }
         function saveTeamInfo(button){
             if(document.getElementById('matchNumInput') != null){

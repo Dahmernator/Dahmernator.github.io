@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auto Scoring</title>
+    <link rel="stylesheet" href="style.css">
     <style>
         .content {
             max-width: 1000px;
-            margin: auto;
-            background: white;
             padding: 0px;
             height: 100vh;
             display: grid;
@@ -21,21 +20,8 @@
             background-size: cover;
             background-position: center;
         }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: rgb(123, 182, 255);
-            text-align: center;
-            padding: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #233dff;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 4px;
-            margin-bottom: 5px;
+        #red {
+            background-color: red;
         }
         .disk {
             width: 12px; /* Diameter of the disk */
@@ -45,10 +31,35 @@
             position: absolute; /* Position it on the screen */
             background-color: transparent; /* Default color */
         }
+        #bot {
+            width: 30px;
+            height: 30px;
+            background-color: #555555;
+            position: absolute;
+            border: solid;
+            border-radius: 4px;
+            border-color: black;
+            font-size: 12px;
+            color: #fff;
+            left: 335px;/* Halfway == (container_width-bot_width)/2 == 350 - width/2 */
+            top: 0px;/* Stays on top */
+        }
     </style>
 </head>
 <body>
-    <div class="content field" onclick="recordData(event)">
+    <div class="content" style="height: auto; width: 700px;" >
+        <form id="matchNumForm">
+            <input type="number" id="teamNumInput" placeholder="Team Number" required>
+            <input type="number" id="matchNumInput" placeholder="Match Number" required><br>
+            <button type="button" id='red' onclick="saveTeamInfo(this)">Red 1</button>
+            <button type="button" id='red' onclick="saveTeamInfo(this)">Red 2</button>
+            <button type="button" id='red' onclick="saveTeamInfo(this)">Red 3</button>
+            <button type="button" onclick="saveTeamInfo(this)">Blue 1</button>
+            <button type="button" onclick="saveTeamInfo(this)">Blue 2</button>
+            <button type="button" onclick="saveTeamInfo(this)">Blue 3</button>
+        </form>
+    </div>
+    <div class="content field" onclick="botMovement(event)">
         <div class="disk" style="top: 187px; left: 173px;"></div>
         <div class="disk" style="top: 232px; left: 173px;"></div>
         <div class="disk" style="top: 277px; left: 173px;"></div>
@@ -60,14 +71,102 @@
         <div class="disk" style="top: 187px; left: 507px;"></div>
         <div class="disk" style="top: 232px; left: 507px;"></div>
         <div class="disk" style="top: 277px; left: 507px;"></div>
-
+        <div id="bot"></div>
+    </div>
+    <div class="content" style="height: auto; width: 700px;">
+        <button type="button" onclick="resetBotMovement()">Reset Start Pos</button>
+        <button type="button" onclick="animateBot()">Animate</button>
+        <button type="button">Next</button>
     </div>
     <script>
-        function recordData(e) {
-            field = document.querySelector('.content');
-            disks = document.getElementsByClassName('disk');
-            console.log(e.x, e.y);
-            console.log(field.style);
+        var bot = document.getElementById('bot');
+        var movingBot = true;//when clicking it will move the bot
+        var moved = true;
+        var clicks = [];
+        function resetBotMovement(){
+            clicks = [];
+            movingBot = true;
+            moved = true;
+            bot.style.borderColor = '#000';
+            bot.style.top = '0px';
+            bot.style.left = '335px';
+            bot.style.transform = 'rotate(0deg)'
+        }
+        function botMovement(e) {
+            var pi = 3.14159
+            var field = document.querySelector('.field');
+            var disks = document.getElementsByClassName('disk');
+            var xBotCenter = e.x-(e.target.offsetLeft+bot.offsetWidth/2);
+            var yBotCenter = e.y-(e.target.offsetTop+bot.offsetHeight/2);
+            var fieldX = e.x-e.target.offsetLeft;
+            var fieldY = e.y-e.target.offsetTop;
+            
+            if(movingBot && !e.target.outerHTML.includes('bot', 20)){//when moving and click the #bot div, click #1
+                bot.style.borderColor = '#0f0';
+                moved = false;
+                return
+            }
+            if(movingBot && !moved){//when clicking the field and when not moved yet, click #2 //where the bot is going to be placed
+                if(fieldX > 123 && fieldX < 153 && fieldY > 226 && fieldY < 258){//click is infront of front red speaker
+                    bot.style.left = '123px';
+                    bot.style.top = '226px';
+                }else if(fieldX > 543 && fieldX < 573 && fieldY > 226 && fieldY < 258){//click is infront of front blue speaker
+                    bot.style.left = '543px';
+                    bot.style.top = '226px';
+                }else if(fieldX > 91 && fieldX < 121 && fieldY > 194 && fieldY < 224){//click is top of front red speaker
+                    bot.style.left = 88+15*Math.cos(pi/6)+'px';
+                    bot.style.top = 194-15*Math.sin(pi/6) +'px';
+                    bot.style.transform = 'rotate(30deg)';
+                }else if(fieldX > 579 && fieldX < 609 && fieldY > 194 && fieldY < 224){//click is top of front blue speaker
+                    bot.style.left = 579-15*Math.cos(-pi/6)+'px';
+                    bot.style.top = 194+15*Math.sin(-pi/6)+'px';
+                    bot.style.transform = 'rotate(-30deg)';
+                }else if(fieldX > 91 && fieldX < 121 && fieldY > 259 && fieldY < 289){//click is bottom of front red speaker
+                    bot.style.left = 88+15*Math.cos(pi/6)+'px';
+                    bot.style.top = 257+15*Math.sin(pi/6)+'px';
+                    bot.style.transform = 'rotate(-30deg)'
+                }else if(fieldX > 579 && fieldX < 609 && fieldY > 259 && fieldY < 289){//click is bottom of front blue speaker
+                    bot.style.left = 579-15*Math.cos(-pi/6)+'px';
+                    bot.style.top = 257-15*Math.sin(-pi/6)+'px';
+                    bot.style.transform = 'rotate(30deg)'
+                }else{
+                    bot.style.left = xBotCenter + "px";
+                    bot.style.top = yBotCenter + "px";
+                }
+                
+                clicks[0] = [parseInt(bot.style.left.slice(0, -2)), parseInt(bot.style.top.slice(0, -2))];
+                bot.style.borderColor = '#000';
+                movingBot = false;
+                moved = true;
+                return
+            }else{
+                clicks.push([fieldX, fieldY]);
+                console.log(clicks, "clicks");
+            }
+            
+        }
+        function animateBot(){
+
+        }
+        function saveTeamInfo(button){
+            if(document.getElementById('matchNumInput') != null){
+                var teamNum = document.getElementById('teamNumInput').value;
+                var matchNum = document.getElementById('matchNumInput').value;
+                var teamSelector = button.innerHTML;
+                localStorage.setItem('teamNum', teamNum);
+                localStorage.setItem('matchNum', matchNum);
+                localStorage.setItem('teamSelector', teamSelector);
+            }
+            if(button.innerHTML.includes("Blue")){
+                var bgColor = "blue";
+            }else{
+                var bgColor = "red";
+            }
+            
+            var bot = document.getElementById('bot');
+            bot.style.display = 'block';
+            bot.style.backgroundColor = bgColor;
+            bot.innerHTML = teamNum;
         }
     </script>
 </body>

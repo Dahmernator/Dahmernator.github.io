@@ -167,22 +167,22 @@
                 }else if(fieldX > 45 && fieldX < 61 && fieldY > 97 && fieldY < 112){//click is top of red speaker
                     console.log('red top');
                     bot.style.left = 43+7.5*Math.cos(pi/6)+'px';
-                    bot.style.top = 96-7.5*Math.sin(pi/6) +'px';
+                    bot.style.top = 95-7.5*Math.sin(pi/6) +'px';
                     bot.style.transform = 'rotate(30deg)';
                 }else if(fieldX > 279 && fieldX < 305 && fieldY > 97 && fieldY < 112){//click is top of blue speaker
                     console.log('blue top');
                     bot.style.left = 289-7.5*Math.cos(-pi/6)+'px';
-                    bot.style.top = 96+7.5*Math.sin(-pi/6)+'px';
+                    bot.style.top = 95+7.5*Math.sin(-pi/6)+'px';
                     bot.style.transform = 'rotate(-30deg)';
                 }else if(fieldX > 45 && fieldX < 61 && fieldY > 129 && fieldY < 145){//click is bottom of red speaker
                     console.log('red bottom');
                     bot.style.left = 43+7.5*Math.cos(pi/6)+'px';
-                    bot.style.top = 129+7.5*Math.sin(pi/6)+'px';
+                    bot.style.top = 130+7.5*Math.sin(pi/6)+'px';
                     bot.style.transform = 'rotate(-30deg)'
                 }else if(fieldX > 279 && fieldX < 305 && fieldY > 129 && fieldY < 145){//click is bottom of blue speaker
                     console.log('blue bottom');
                     bot.style.left = 289-7.5*Math.cos(-pi/6)+'px';
-                    bot.style.top = 129-7.5*Math.sin(-pi/6)+'px';
+                    bot.style.top = 130-7.5*Math.sin(-pi/6)+'px';
                     bot.style.transform = 'rotate(30deg)'
                 }else{
                     console.log('random on map');

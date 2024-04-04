@@ -58,7 +58,7 @@
 </head>
 <body>
     <div class="content" style="height: auto; width: 350px;" >
-        <form id="matchNumForm">
+        <form id="matchNumForm" onclick="autoScoring(event)">
             <input type="number" id="teamNumInput" placeholder="Team Number" required>
             <input type="number" id="matchNumInput" placeholder="Match Number" required><br>
             <button type="button" id='red' onclick="saveTeamInfo(this)">Red 1</button>
@@ -91,13 +91,23 @@
             <button type="button" id="sub" style="color: red;">Time -1</button>
             <button type="button" onclick="resetBotMovement()">Reset Start Pos</button>
             <button type="button" onclick="animateBot()">Animate</button>
-            <button type="button">Next</button>
+        </form>
+    </div>
+    <div class="content" style="height: auto; width: 350px;" onclick="autoScoring(e)">
+        <form>
+            <p>Click the button for each corresponding shot</p>
+            <button type="button" class="pickTeam" id="speakerBtn">Speaker Shots: 0</button>
+            <button type="button" class="pickTeam" id="ampBtn">Amp Shots: 0</button><br>
+            <button type="button" class="pickTeam" id="ssub">Speaker -1</button>
+            <button type="button" class="pickTeam" id="asub">Amp -1</button>
+            <button type="button" onclick="nextPage()">Next</button>
         </form>
     </div>
     <script>
         var pi = 3.1415;
         var bot = document.getElementById('bot');
         var startingRing = document.getElementsByClassName('note-0')[0];
+        var field = document.getElementsByClassName('field')[0];
         var movingBot = true;//when clicking it will move the bot
         var moved = true;
         var clicks = [];
@@ -108,7 +118,38 @@
         var startTime;
         var totalAnimationTime = 0;
         var totalDistance = 0;
+        var autoSpeaker = 0;
+        var autoAmp = 0;
+        function nextPage(){
+            if(document.getElementById('matchNumInput') != null){
+                var teamNum = document.getElementById('teamNumInput').value;
+                var matchNum = document.getElementById('matchNumInput').value;
+                var teamSelector = button.innerHTML;
+                localStorage.setItem('teamNum', teamNum);
+                localStorage.setItem('matchNum', matchNum);
+                localStorage.setItem('teamSelector', teamSelector);
+                document.getElementById('matchNumForm').reset();
+            }
+            localStorage.setItem('autoSpeaker', autoSpeaker);
+            localStorage.setItem('autoAmp', autoAmp);
+            localStorage.setItem('taxi', taxi);
+            localStorage.setItem('clicks', clicks);
+            window.location.href = "teleop.html";
+        }
+        function autoScoring(e){
+            console.log('autoScoring');
+            if(e.target.id == 'speakerBtn'){
+                autoSpeaker++;
+            }else if(e.target.id == "ampBtn"){
+                autoAmp++;
+            }else if(e.target.id == "ssub" && autoSpeaker > 0){
+                autoSpeaker--;
+            }else if(e.target.id == "asub" && autoAmp > 0){
+                autoAmp--;
+            }
+        }
         function timing(e){
+            console.log('timing');
             if(e.target.id == 'timing' && timeLeft < 15){
                 timeLeft++;
                 document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds"
@@ -117,8 +158,23 @@
                 document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds"
             }
         }
+        function speakerAdd(num){
+            if(autoSpeaker + num >= 0){
+                autoSpeaker += num;
+            }
+            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
+        }
+        function ampAdd(num){
+            if(autoAmp + num >= 0){
+                autoAmp += num;
+            }
+            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
+        }
         function resetBotMovement(){
-            console.log(clicks);
+            var lines = document.getElementsByClassName('line');
+            for(var i = 0; i < lines.length; i+=0){
+                lines[i].remove();
+            }
             clicks = [];
             grabNotes = [];
             scoreNote = [];
@@ -131,6 +187,7 @@
             startingRing.style.display = "none";
         }
         function botMovement(e) {
+            console.log('botMovement');
             var fieldX;
             var fieldY;
             if(e.target.className == 'content field'){//finds the correct object for the offset
@@ -167,22 +224,22 @@
                 }else if(fieldX > 45 && fieldX < 61 && fieldY > 97 && fieldY < 112){//click is top of red speaker
                     console.log('red top');
                     bot.style.left = 43+7.5*Math.cos(pi/6)+'px';
-                    bot.style.top = 95-7.5*Math.sin(pi/6) +'px';
+                    bot.style.top = 96-7.5*Math.sin(pi/6) +'px';
                     bot.style.transform = 'rotate(30deg)';
                 }else if(fieldX > 279 && fieldX < 305 && fieldY > 97 && fieldY < 112){//click is top of blue speaker
                     console.log('blue top');
                     bot.style.left = 289-7.5*Math.cos(-pi/6)+'px';
-                    bot.style.top = 95+7.5*Math.sin(-pi/6)+'px';
+                    bot.style.top = 96+7.5*Math.sin(-pi/6)+'px';
                     bot.style.transform = 'rotate(-30deg)';
                 }else if(fieldX > 45 && fieldX < 61 && fieldY > 129 && fieldY < 145){//click is bottom of red speaker
                     console.log('red bottom');
                     bot.style.left = 43+7.5*Math.cos(pi/6)+'px';
-                    bot.style.top = 130+7.5*Math.sin(pi/6)+'px';
+                    bot.style.top = 129+7.5*Math.sin(pi/6)+'px';
                     bot.style.transform = 'rotate(-30deg)'
                 }else if(fieldX > 279 && fieldX < 305 && fieldY > 129 && fieldY < 145){//click is bottom of blue speaker
                     console.log('blue bottom');
                     bot.style.left = 289-7.5*Math.cos(-pi/6)+'px';
-                    bot.style.top = 130-7.5*Math.sin(-pi/6)+'px';
+                    bot.style.top = 129-7.5*Math.sin(-pi/6)+'px';
                     bot.style.transform = 'rotate(30deg)'
                 }else{
                     console.log('random on map');
@@ -194,17 +251,47 @@
                 startingRing.style.display = 'inline';
             
                 clicks[0] = [parseInt(bot.style.left.slice(0, -2)), parseInt(bot.style.top.slice(0, -2))];
+                console.log(e, clicks[0]);
                 bot.style.borderColor = '#000';
                 movingBot = false;
                 moved = true;
                 //console.log("bot coords", bot.style.left, bot.style.top);
                 return
-            }else{
+            }else if(!movingBot && moved){
                 fieldX -= 10;//offset so it puts top left corner at x&y rather than center
                 fieldY -= 10;//i programmed with center first and dont want to change it :D
-                clicks.push([fieldX, fieldY]);
                 
-                console.log(e);
+                var newCoordIndex = clicks.push([fieldX, fieldY]);
+                var line = document.createElement('div');
+                var length = distFormula(clicks[newCoordIndex-2], clicks[newCoordIndex-1]);
+                var angle = Math.atan((clicks[newCoordIndex-2][1] - clicks[newCoordIndex-1][1])/(clicks[newCoordIndex-2][0] - clicks[newCoordIndex-1][0]));
+                
+                line.style.width = length  + 'px';
+                line.style.height = '1px';
+                line.style.left = clicks[newCoordIndex-2][0]+10 + 'px';
+                line.style.top = clicks[newCoordIndex-2][1]+10 + 'px';
+                if(clicks[newCoordIndex-2][0] > clicks[newCoordIndex-1][0]){//if previous x is less than current x
+                    console.log('flip x');
+                    line.style.left = clicks[newCoordIndex-1][0]+10 + 'px';
+                    line.style.top = clicks[newCoordIndex-1][1]+10 + 'px';
+                }
+                if(clicks[newCoordIndex-2][1] > clicks[newCoordIndex-1][1]){
+                    console.log('flip y');
+                    line.style.top = clicks[newCoordIndex-2][1]+10 + 'px';
+                    line.style.left = clicks[newCoordIndex-2][0]+10 + 'px';
+                }
+                if(clicks[newCoordIndex-2][0] > clicks[newCoordIndex-1][0] && clicks[newCoordIndex-2][1] > clicks[newCoordIndex-1][1]){
+                    line.style.left = clicks[newCoordIndex-1][0]+10 + 'px';
+                    line.style.top = clicks[newCoordIndex-1][1]+10 + 'px';
+                }
+                line.className = 'line';
+                line.style.transform = 'rotate(' + angle + 'rad)';
+                line.style.transformOrigin = 'top left';
+                line.style.backgroundColor = 'white';
+                line.style.position = 'absolute';
+                line.style.opacity = '0.8';
+                
+                field.appendChild(line);
             }
         }
         function noAuto(){

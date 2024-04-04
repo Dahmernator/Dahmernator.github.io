@@ -49,7 +49,8 @@
 
         firebase.initializeApp(firebaseConfig);
 
-        var messagesRef = firebase.database().ref('Team Numbers');
+        var dataRef = firebase.database().ref('Team Numbers');
+        var movingRef = firebase.database().ref('Moving Data');
 
         var teleSpeaker = 0;
         var teleAmp = 0;
@@ -108,6 +109,8 @@
             var climb = localStorage.getItem('climb');
             var trap = localStorage.getItem('trap');
             var user = localStorage.getItem('user');
+            var clicks = localStorage.getItem('clicks');
+            var timeLeft = localStorage.getItem('timeLeft');
 
             while(teamNum.length < 4){
                 teamNum = "0" + teamNum;
@@ -115,7 +118,7 @@
             }
             teamNum = "Team " + teamNum;
             
-            let newMessageRef = messagesRef.child(teamNum).child(matchNum);
+            let newMessageRef = dataRef.child(teamNum).child(matchNum);
             newMessageRef.set({
             user: user,
             teamSelector: teamSelector,
@@ -128,6 +131,11 @@
             Ftrap: trap,
             });
 
+            let newMessageRef = movingRef.child(teamNum).child(matchNum);
+            newMessageRef.set({
+            clicks: clicks,
+            timeLeft: timeLeft,
+            });
         }
             
     </script>

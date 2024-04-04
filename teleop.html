@@ -119,7 +119,7 @@
             }
             teamNum = "Team " + teamNum;
             
-            let newMessageRef = dataRef.child(teamNum).child(matchNum);
+            var newMessageRef = dataRef.child(teamNum).child(matchNum);
             newMessageRef.set({
             user: user,
             teamSelector: teamSelector,
@@ -132,8 +132,8 @@
             Ftrap: trap,
             });
 
-            let newMessageRef = movingRef.child(teamNum).child(matchNum);
-            newMessageRef.set({
+            var newMessageRef2 = movingRef.child(teamNum).child(matchNum);
+            newMessageRef2.set({
             clicks: clicks,
             timeLeft: timeLeft,
             });

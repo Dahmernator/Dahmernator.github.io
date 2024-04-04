@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,23 +84,22 @@
         <div class="note note-11" style="top: 139px; left: 254px;"></div>
     </div>
     <div class="content" style="height: auto; width: 350px;" onclick="timing(event)">
-        <p><b>WHEN CLICKING ON FIELD: DO NOT BE ZOOMED OR SCROLL</b></p>
         <p class="noAuto">No Auto<input type="checkbox" id="noAuto" onchange='noAuto()'></p>
         <form>
             <button type="button" id="timing">Time Left: 0 seconds</button>
             <button type="button" id="sub" style="color: red;">Time -1</button>
             <button type="button" onclick="resetBotMovement()">Reset Start Pos</button>
-            <!-- <button type="button" onclick="animateBot()">Animate</button> --!>
+            <button type="button" onclick="animateBot()">Animate</button>
         </form>
     </div>
-    <div class="content" style="height: auto; width: 350px;" onclick="autoScoring(e)">
+    <div class="content" style="height: auto; width: 350px;" onclick="autoScoring(event)">
         <form>
             <p>Click the button for each corresponding shot</p>
             <button type="button" class="pickTeam" id="speakerBtn">Speaker Shots: 0</button>
             <button type="button" class="pickTeam" id="ampBtn">Amp Shots: 0</button><br>
             <button type="button" class="pickTeam" id="ssub">Speaker -1</button>
             <button type="button" class="pickTeam" id="asub">Amp -1</button>
-            <button type="button" onclick="nextPage()">Next</button>
+            <button type="button" id="next" onclick="nextPage()">Next</button>
         </form>
     </div>
     <script>
@@ -122,48 +120,41 @@
         var autoSpeaker = 0;
         var autoAmp = 0;
         function nextPage(){
-            if(document.getElementById('matchNumInput') != null){
-                var teamNum = document.getElementById('teamNumInput').value;
-                var matchNum = document.getElementById('matchNumInput').value;
-                var teamSelector = button.innerHTML;
-                localStorage.setItem('teamNum', teamNum);
-                localStorage.setItem('matchNum', matchNum);
-                localStorage.setItem('teamSelector', teamSelector);
-                document.getElementById('matchNumForm').reset();
-            }
+            localStorage.setItem('autoSpeaker', autoSpeaker);
+            localStorage.setItem('autoAmp', autoAmp);
             if(clicks.length > 1){
                 var taxi = true;
             }else{
                 var taxi = false;
             }
-            localStorage.setItem('autoSpeaker', autoSpeaker);
-            localStorage.setItem('autoAmp', autoAmp);
             localStorage.setItem('taxi', taxi);
             localStorage.setItem('clicks', clicks);
-            localStorage.setItem('timeLeft', timeLeft);
-            
             window.location.href = "teleop.html";
         }
         function autoScoring(e){
             console.log('autoScoring');
             if(e.target.id == 'speakerBtn'){
                 autoSpeaker++;
+                document.getElementById('speakerBtn').innerHTML = "Speaker Shots:" + autoSpeaker;
             }else if(e.target.id == "ampBtn"){
                 autoAmp++;
+                document.getElementById('ampBtn').innerHTML = "Amp Shots:" + autoAmp;
             }else if(e.target.id == "ssub" && autoSpeaker > 0){
                 autoSpeaker--;
+                document.getElementById('speakerBtn').innerHTML = "Speaker Shots:" + autoSpeaker;
             }else if(e.target.id == "asub" && autoAmp > 0){
                 autoAmp--;
+                document.getElementById('ampBtn').innerHTML = "Amp Shots:" + autoAmp;
             }
         }
         function timing(e){
             console.log('timing');
             if(e.target.id == 'timing' && timeLeft < 15){
                 timeLeft++;
-                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds"
+                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
             }else if(e.target.id == 'sub' && timeLeft > 0){
                 timeLeft--;
-                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds"
+                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
             }
         }
         function speakerAdd(num){

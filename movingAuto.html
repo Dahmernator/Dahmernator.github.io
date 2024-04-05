@@ -134,6 +134,7 @@
                 console.log('noData');
             }else{
                 var localData = localStorage.getItem('matchData') + "," + matchData;
+                localStorage.setItem('matchData', localData);
                 console.log(localData);
             }
             localStorage.setItem('timeLeft', timeLeft);

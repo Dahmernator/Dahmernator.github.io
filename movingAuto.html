@@ -119,7 +119,7 @@
         var totalDistance = 0;
         var autoSpeaker = 0;
         var autoAmp = 0;
-        localStorage.clear();
+        var bgColor;
         function nextPage(){
             localStorage.setItem('autoSpeaker', autoSpeaker);
             localStorage.setItem('autoAmp', autoAmp);
@@ -128,10 +128,34 @@
             }else{
                 var taxi = false;
             }
-            localStorage.setItem('taxi', taxi);
-            localStorage.setItem('clicks', clicks);
+            var matchData = ["new match", localStorage.getItem('teamNum'), localStorage.getItem('matchNum'), timeLeft, clicks, bgColor];
+            if(localStorage.getItem('matchData') == null){
+                localStorage.setItem('matchData', matchData);
+                console.log('noData');
+            }else{
+                var localData = localStorage.getItem('matchData') + "," + matchData;
+                console.log(localData);
+            }
             localStorage.setItem('timeLeft', timeLeft);
-            window.location.href = "teleop.html";
+            //window.location.href = "teleop.html";
+        }
+        function stringToPairs(str) {
+        // Split the string into an array of numbers
+            const numbers = str.split(',').map(Number);
+
+            // Initialize an empty array to store pairs
+            const pairs = [];
+
+            // Group the numbers into pairs
+            for (let i = 0; i < numbers.length; i += 2) {
+                // Check if there are at least two numbers remaining
+                if (i + 1 < numbers.length) {
+                    // Push a pair of numbers into the pairs array
+                    pairs.push([numbers[i], numbers[i + 1]]);
+                }
+            }
+
+            return pairs;
         }
         function autoScoring(e){
             console.log('autoScoring');
@@ -364,9 +388,9 @@
                 localStorage.setItem('teamSelector', teamSelector);
             }
             if(button.innerHTML.includes("Blue")){
-                var bgColor = "blue";
+                bgColor = "blue";
             }else{
-                var bgColor = "red";
+                bgColor = "red";
             }
             
             var bot = document.getElementById('bot');

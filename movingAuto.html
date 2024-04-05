@@ -94,7 +94,7 @@
     </div>
     <div class="content" style="height: auto; width: 350px;" onclick="autoScoring(event)">
         <form>
-            <p>Click the button for each corresponding shot</p>
+            <p id='dataViewer' onclick="displayData()">Click the button for each corresponding shot</p>
             <button type="button" class="pickTeam" id="speakerBtn">Speaker Shots: 0</button>
             <button type="button" class="pickTeam" id="ampBtn">Amp Shots: 0</button><br>
             <button type="button" class="pickTeam" id="ssub">Speaker -1</button>
@@ -139,6 +139,9 @@
             }
             localStorage.setItem('timeLeft', timeLeft);
             window.location.href = "teleop.html";
+        }
+        function displayData(){
+            document.getElementById('dataViewer').innerHTML = localStorage.getItem('matchData');
         }
         function stringToPairs(str) {
         // Split the string into an array of numbers

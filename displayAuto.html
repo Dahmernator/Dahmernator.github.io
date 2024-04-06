@@ -142,7 +142,7 @@
                 if(teamValue == 'Team Number' && matchValue > 0){
                     
                 }else{
-                    createBot.style.opacity = 0.2 + 0.8 * 1/dataArr.length;
+                    createBot.style.opacity = Math.min(0.2 + 1.2 * 1/dataArr.length, 1);
                 }
                 document.getElementsByClassName('field')[0].appendChild(createBot);
             }

@@ -58,6 +58,7 @@
         <form>
             <button type="button" onclick="searchData()">Search</button>
             <button type="button" onclick="animateBot()">Animate</button>
+            <button type="submit" onclick="back()">Back to Menu</button>
         </form>
     </div>
     <script>
@@ -243,6 +244,9 @@
                 return (distFormula(point, clicks[index + 1]) / totalDistance) * totalAnimationTime;
             });
             animate(performance.now(), startTime, 1, totalAnimationTime, totalDistance, durations, clicks, i, bot);
+        }
+        function back(){
+            window.location.href = 'menu.html';
         }
     </script>
 </body>

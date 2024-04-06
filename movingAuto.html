@@ -120,6 +120,7 @@
         var autoSpeaker = 0;
         var autoAmp = 0;
         var bgColor;
+        var previousClicks = [];
         function nextPage(){
             localStorage.setItem('autoSpeaker', autoSpeaker);
             localStorage.setItem('autoAmp', autoAmp);
@@ -216,6 +217,8 @@
             startingRing.style.display = "none";
         }
         function botMovement(e) {
+            previousClicks.push('clear');
+            console.log(previousClicks);
             console.log('botMovement');
             var fieldX;
             var fieldY;
@@ -224,10 +227,13 @@
                 fieldY = e.y-e.target.offsetTop;
                 console.log('field');
             }else{
+                previousClicks.push('the');
+                console.log(previousClicks);
                 fieldX = e.x-e.target.offsetParent.offsetLeft;
                 fieldY = e.y-e.target.offsetParent.offsetTop;
                 console.log('something else on the field');
             }
+            
             var xBotCenter = fieldX-10;
             var yBotCenter = fieldY-10;
             //console.log('fieldx', fieldX, 'fieldy', fieldY);
@@ -328,9 +334,15 @@
             if(noAutoBool){
                 document.getElementById('timing').innerHTML = "Time Left: 15 seconds"
                 timeLeft = 15;
+                previousClicks.push("Please");
+                console.log(previousClicks);
+
             }else{
                 document.getElementById('timing').innerHTML = "Time Left: 0 seconds"
                 timeLeft = 0;
+                previousClicks.push("data");
+                console.log(previousClicks);
+
             }
         }
         function distFormula(point1, point2) {
@@ -383,6 +395,14 @@
             animate(performance.now(), 0);
         }
         function saveTeamInfo(button){
+            previousClicks.push('now');
+                console.log(previousClicks);
+                if(previousClicks.length == 5 && previousClicks[0] == 'Please' && previousClicks[1] == 'clear' && previousClicks[2] == 'the' && previousClicks[3] == 'data' && previousClicks[4] == 'now'){
+                    console.log(localStorage.getItem('matchData'));
+                    localStorage.clear();
+                    console.log(localStorage.getItem('matchData'));
+                }
+
             if(document.getElementById('matchNumInput') != null){
                 var teamNum = document.getElementById('teamNumInput').value;
                 var matchNum = document.getElementById('matchNumInput').value;

@@ -155,6 +155,119 @@
 
             return pairs;
         }
+        function botMovement(e) {
+            previousClicks.push('clear');
+            console.log(previousClicks);
+            console.log('botMovement');
+            var fieldX;
+            var fieldY;
+            if(e.target.className == 'content field'){//finds the correct object for the offset
+                fieldX = e.x-e.target.offsetLeft;
+                fieldY = e.y-e.target.offsetTop;
+                console.log('field');
+            }else{
+                previousClicks.push('the');
+                console.log(previousClicks);
+                fieldX = e.x-e.target.offsetParent.offsetLeft;
+                fieldY = e.y-e.target.offsetParent.offsetTop;
+                console.log('something else on the field');
+            }
+
+            var xBotCenter = fieldX-10;
+            var yBotCenter = fieldY-10;
+            //console.log('fieldx', fieldX, 'fieldy', fieldY);
+            //console.log('e', e);
+            //console.log('parent', e.target.offsetParent, e.target.offsetParent.offsetLeft, e.target.offsetParent.offsetTop);
+            if(movingBot && e.target.id == 'bot'){//when moving and click the #bot div, click #1
+                //console.log('click 1');
+                bot.style.borderColor = '#0f0';
+                moved = false;
+                //console.log("bot coords", bot.style.left, bot.style.top);
+                return
+            }
+            if(movingBot && !moved){//when clicking the field and when not moved yet, click #2 //where the bot is going to be placed
+                //console.log('click 2');
+                if(fieldX > 61 && fieldX < 74 && fieldY > 113 && fieldY < 129){//click is infront of front red speaker
+                    console.log('red front');
+                    bot.style.left = '62px';
+                    bot.style.top = '112px';
+                }else if(fieldX > 271 && fieldX < 287 && fieldY > 113 && fieldY < 129){//click is infront of front blue speaker
+                    console.log('blue front');
+                    bot.style.left = '270px';
+                    bot.style.top = '112px';
+                }else if(fieldX > 45 && fieldX < 61 && fieldY > 97 && fieldY < 112){//click is top of red speaker
+                    console.log('red top');
+                    bot.style.left = 43+7.5*Math.cos(pi/6)+'px';
+                    bot.style.top = 96-7.5*Math.sin(pi/6) +'px';
+                    bot.style.transform = 'rotate(30deg)';
+                }else if(fieldX > 279 && fieldX < 305 && fieldY > 97 && fieldY < 112){//click is top of blue speaker
+                    console.log('blue top');
+                    bot.style.left = 289-7.5*Math.cos(-pi/6)+'px';
+                    bot.style.top = 96+7.5*Math.sin(-pi/6)+'px';
+                    bot.style.transform = 'rotate(-30deg)';
+                }else if(fieldX > 45 && fieldX < 61 && fieldY > 129 && fieldY < 145){//click is bottom of red speaker
+                    console.log('red bottom');
+                    bot.style.left = 43+7.5*Math.cos(pi/6)+'px';
+                    bot.style.top = 129+7.5*Math.sin(pi/6)+'px';
+                    bot.style.transform = 'rotate(-30deg)'
+                }else if(fieldX > 279 && fieldX < 305 && fieldY > 129 && fieldY < 145){//click is bottom of blue speaker
+                    console.log('blue bottom');
+                    bot.style.left = 289-7.5*Math.cos(-pi/6)+'px';
+                    bot.style.top = 129-7.5*Math.sin(-pi/6)+'px';
+                    bot.style.transform = 'rotate(30deg)'
+                }else{
+                    console.log('random on map');
+                    bot.style.left = xBotCenter + "px";
+                    bot.style.top = yBotCenter + "px";
+                }
+                startingRing.style.left = parseInt(bot.style.left.slice(0, -2))+5 + "px";//+5 is offset for radius
+                startingRing.style.top = parseInt(bot.style.top.slice(0, -2))+7 + "px";//includes offset of bot width
+                startingRing.style.display = 'inline';
+            
+                clicks[0] = [parseInt(bot.style.left.slice(0, -2)), parseInt(bot.style.top.slice(0, -2))];
+                console.log(e, clicks[0]);
+                bot.style.borderColor = '#000';
+                movingBot = false;
+                moved = true;
+                //console.log("bot coords", bot.style.left, bot.style.top);
+                return
+            }else if(!movingBot && moved){
+                fieldX -= 10;//offset so it puts top left corner at x&y rather than center
+                fieldY -= 10;//i programmed with center first and dont want to change it :D
+                
+                var newCoordIndex = clicks.push([fieldX, fieldY]);
+                var line = document.createElement('div');
+                var length = distFormula(clicks[newCoordIndex-2], clicks[newCoordIndex-1]);
+                var angle = Math.atan((clicks[newCoordIndex-2][1] - clicks[newCoordIndex-1][1])/(clicks[newCoordIndex-2][0] - clicks[newCoordIndex-1][0]));
+                
+                line.style.width = length  + 'px';
+                line.style.height = '1px';
+                line.style.left = clicks[newCoordIndex-2][0]+10 + 'px';
+                line.style.top = clicks[newCoordIndex-2][1]+10 + 'px';
+                if(clicks[newCoordIndex-2][0] > clicks[newCoordIndex-1][0]){//if previous x is less than current x
+                    console.log('flip x');
+                    line.style.left = clicks[newCoordIndex-1][0]+10 + 'px';
+                    line.style.top = clicks[newCoordIndex-1][1]+10 + 'px';
+                }
+                if(clicks[newCoordIndex-2][1] > clicks[newCoordIndex-1][1]){
+                    console.log('flip y');
+                    line.style.top = clicks[newCoordIndex-2][1]+10 + 'px';
+                    line.style.left = clicks[newCoordIndex-2][0]+10 + 'px';
+                }
+                if(clicks[newCoordIndex-2][0] > clicks[newCoordIndex-1][0] && clicks[newCoordIndex-2][1] > clicks[newCoordIndex-1][1]){
+                    line.style.left = clicks[newCoordIndex-1][0]+10 + 'px';
+                    line.style.top = clicks[newCoordIndex-1][1]+10 + 'px';
+                }
+                line.className = 'line';
+                line.style.transform = 'rotate(' + angle + 'rad)';
+                line.style.transformOrigin = 'top left';
+                line.style.backgroundColor = 'white';
+                line.style.position = 'absolute';
+                line.style.opacity = '0.8';
+                
+                field.appendChild(line);
+            }
+        }
         function autoScoring(e){
             console.log('autoScoring');
             if(e.target.id == 'speakerBtn'){

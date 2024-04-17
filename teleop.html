@@ -36,22 +36,6 @@
     <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js">
     </script>
     <script>
-        const firebaseConfig = {
-              apiKey: "AIzaSyASXLHpmWu4nMLWHah1YlDxaZh2enuw33c",
-              authDomain: "frcscouting-1c70f.firebaseapp.com",
-              databaseURL: "https://frcscouting-1c70f-default-rtdb.firebaseio.com",
-              projectId: "frcscouting-1c70f",
-              storageBucket: "frcscouting-1c70f.appspot.com",
-              messagingSenderId: "958167429133",
-              appId: "1:958167429133:web:ea828d3023d70d80586544",
-              measurementId: "G-00DHFPGHM4"
-            };
-
-        firebase.initializeApp(firebaseConfig);
-
-        var dataRef = firebase.database().ref('Team Numbers');
-        var movingRef = firebase.database().ref('Moving Data');
-
         var teleSpeaker = 0;
         var teleAmp = 0;
         var climb = false;
@@ -93,52 +77,20 @@
             localStorage.setItem('teleAmp', teleAmp);
             localStorage.setItem('climb', climb);
             localStorage.setItem('trap', trap);
+
+            var matchData = localStorage.getItem('oneMatch') + teleSpeaker + ',' + teleAmp + ',' + climb + 'trap';
+            
+            if(localStorage.getItem('matchData') == null){
+                localStorage.setItem('matchData', matchData);
+                console.log('noData');
+            }else{
+                var localData = localStorage.getItem('matchData') + "," + matchData;
+                localStorage.setItem('matchData', localData);
+                console.log(localData, localStorage.getItem('matchData'));
+            } 
+            
             window.location.href = "menu.html";
-            sendData();
-        }
-        function sendData(){
-            console.log("sent data");
-
-            var teamNum = localStorage.getItem('teamNum');
-            var matchNum = "Match " + localStorage.getItem('matchNum');
-            var teamSelector = localStorage.getItem('teamSelector');
-            var autoSpeaker = localStorage.getItem('autoSpeaker');
-            var autoAmp = localStorage.getItem('autoAmp');
-            var taxi = localStorage.getItem('taxi');
-            var speaker = localStorage.getItem('teleSpeaker');
-            var amp = localStorage.getItem('teleAmp');
-            var climb = localStorage.getItem('climb');
-            var trap = localStorage.getItem('trap');
-            var user = localStorage.getItem('user');
-            var clicks = localStorage.getItem('clicks');
-            var timeLeft = localStorage.getItem('timeLeft');
-
-            while(teamNum.length < 4){
-                teamNum = "0" + teamNum;
-                console.log(teamNum);
-            }
-            teamNum = "Team " + teamNum;
-            
-            var newMessageRef = dataRef.child(teamNum).child(matchNum);
-            newMessageRef.set({
-            user: user,
-            teamSelector: teamSelector,
-            AautoSpeaker: autoSpeaker,
-            BautoAmp: autoAmp,
-            Gtaxi: taxi,
-            //Cspeaker: speaker, uncomment to fix
-            //Damp: amp, for scouting with teleop. fix in lookAtData too
-            Eclimb: climb,
-            Ftrap: trap,
-            });
-
-            var newMessageRef2 = movingRef.child(teamNum).child(matchNum);
-            newMessageRef2.set({
-            clicks: clicks,
-            timeLeft: timeLeft,
-            });
-        }
-            
+        }            
     </script>
 </body>
 </html>

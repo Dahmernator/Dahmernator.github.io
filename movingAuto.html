@@ -171,7 +171,34 @@
                 document.getElementById('ampBtn').innerHTML = "Amp Shots:" + autoAmp;
             }
         }
-        
+        function saveTeamInfo(button){
+            previousClicks.push('now');
+                console.log(previousClicks);
+                if(previousClicks.length == 5 && previousClicks[0] == 'Please' && previousClicks[1] == 'clear' && previousClicks[2] == 'the' && previousClicks[3] == 'data' && previousClicks[4] == 'now'){
+                    console.log(localStorage.getItem('matchData'));
+                    localStorage.clear();
+                    console.log(localStorage.getItem('matchData'));
+                }
+
+            if(document.getElementById('matchNumInput') != null){
+                var teamNum = document.getElementById('teamNumInput').value;
+                var matchNum = document.getElementById('matchNumInput').value;
+                var teamSelector = button.innerHTML;
+                localStorage.setItem('teamNum', teamNum);
+                localStorage.setItem('matchNum', matchNum);
+                localStorage.setItem('teamSelector', teamSelector);
+            }
+            if(button.innerHTML.includes("Blue")){
+                bgColor = "blue";
+            }else{
+                bgColor = "red";
+            }
+            
+            var bot = document.getElementById('bot');
+            bot.style.display = 'block';
+            bot.style.backgroundColor = bgColor;
+            bot.innerHTML = teamNum;
+        }
         function speakerAdd(num){
             if(autoSpeaker + num >= 0){
                 autoSpeaker += num;
@@ -183,6 +210,16 @@
                 autoAmp += num;
             }
             document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
+        }
+        function timing(e){
+            console.log('timing');
+            if(e.target.id == 'timing' && timeLeft < 15){
+                timeLeft++;
+                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
+            }else if(e.target.id == 'sub' && timeLeft > 0){
+                timeLeft--;
+                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
+            }
         }
         function resetBotMovement(){
             var lines = document.getElementsByClassName('line');

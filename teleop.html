@@ -86,8 +86,8 @@
             }else{
                 var localData = localStorage.getItem('matchData') + "," + matchData;
                 localStorage.setItem('matchData', localData);
-                console.log(localData);
-                console.log(matchData);
+                console.log(localData, "local");
+                console.log(matchData, "match");
             } 
             
             window.location.href = "menu.html";

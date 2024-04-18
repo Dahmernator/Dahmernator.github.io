@@ -337,6 +337,22 @@
                 document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
             }
         }
+        function noAuto(){
+            noAutoBool = document.getElementById('noAuto').checked;
+            if(noAutoBool){
+                document.getElementById('timing').innerHTML = "Time Left: 15 seconds"
+                timeLeft = 15;
+                previousClicks.push("Please");
+                console.log(previousClicks);
+
+            }else{
+                document.getElementById('timing').innerHTML = "Time Left: 0 seconds"
+                timeLeft = 0;
+                previousClicks.push("data");
+                console.log(previousClicks);
+
+            }
+        }
         function resetBotMovement(){
             var lines = document.getElementsByClassName('line');
             for(var i = 0; i < lines.length; i+=0){

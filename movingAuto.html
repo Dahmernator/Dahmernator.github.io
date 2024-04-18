@@ -131,15 +131,9 @@
                 var taxi = false;
             }
             var matchData = ["new match", localStorage.getItem('teamNum'), localStorage.getItem('matchNum'), autoSpeaker, autoAmp, timeLeft, clicks, bgColor];
-            if(localStorage.getItem('matchData') == null){
-                localStorage.setItem('matchData', matchData);
-                console.log('noData');
-            }else{
-                var localData = localStorage.getItem('matchData') + "," + matchData;
-                localStorage.setItem('matchData', localData);
-                console.log(localData, localStorage.getItem('matchData'));
-            }
-            localStorage.setItem('timeLeft', timeLeft);
+            
+            localStorage.setItem('matchData', localData);
+            
             window.location.href = "teleop.html";
         }
         function displayData(){

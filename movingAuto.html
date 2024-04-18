@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -129,9 +130,16 @@
             }else{
                 var taxi = false;
             }
-            var oneMatch = ["new match", localStorage.getItem('teamNum'), localStorage.getItem('matchNum'), autoSpeaker, autoAmp, timeLeft, clicks, bgColor];
-            localStorage.setItem('oneMatch', oneMatch);
-            
+            var matchData = ["new match", localStorage.getItem('teamNum'), localStorage.getItem('matchNum'), autoSpeaker, autoAmp, timeLeft, clicks, bgColor];
+            if(localStorage.getItem('matchData') == null){
+                localStorage.setItem('matchData', matchData);
+                console.log('noData');
+            }else{
+                var localData = localStorage.getItem('matchData') + "," + matchData;
+                localStorage.setItem('matchData', localData);
+                console.log(localData, localStorage.getItem('matchData'));
+            }
+            localStorage.setItem('timeLeft', timeLeft);
             window.location.href = "teleop.html";
         }
         function displayData(){
@@ -155,6 +163,60 @@
 
             return pairs;
         }
+        function autoScoring(e){
+            console.log('autoScoring');
+            if(e.target.id == 'speakerBtn'){
+                autoSpeaker++;
+                document.getElementById('speakerBtn').innerHTML = "Speaker Shots:" + autoSpeaker;
+            }else if(e.target.id == "ampBtn"){
+                autoAmp++;
+                document.getElementById('ampBtn').innerHTML = "Amp Shots:" + autoAmp;
+            }else if(e.target.id == "ssub" && autoSpeaker > 0){
+                autoSpeaker--;
+                document.getElementById('speakerBtn').innerHTML = "Speaker Shots:" + autoSpeaker;
+            }else if(e.target.id == "asub" && autoAmp > 0){
+                autoAmp--;
+                document.getElementById('ampBtn').innerHTML = "Amp Shots:" + autoAmp;
+            }
+        }
+        function timing(e){
+            console.log('timing');
+            if(e.target.id == 'timing' && timeLeft < 15){
+                timeLeft++;
+                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
+            }else if(e.target.id == 'sub' && timeLeft > 0){
+                timeLeft--;
+                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
+            }
+        }
+        function speakerAdd(num){
+            if(autoSpeaker + num >= 0){
+                autoSpeaker += num;
+            }
+            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
+        }
+        function ampAdd(num){
+            if(autoAmp + num >= 0){
+                autoAmp += num;
+            }
+            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
+        }
+        function resetBotMovement(){
+            var lines = document.getElementsByClassName('line');
+            for(var i = 0; i < lines.length; i+=0){
+                lines[i].remove();
+            }
+            clicks = [];
+            grabNotes = [];
+            scoreNote = [];
+            movingBot = true;
+            moved = true;
+            bot.style.borderColor = '#000';
+            bot.style.top = '0px';
+            bot.style.left = '165px';
+            bot.style.transform = 'rotate(0deg)';
+            startingRing.style.display = "none";
+        }
         function botMovement(e) {
             previousClicks.push('clear');
             console.log(previousClicks);
@@ -172,7 +234,7 @@
                 fieldY = e.y-e.target.offsetParent.offsetTop;
                 console.log('something else on the field');
             }
-
+            
             var xBotCenter = fieldX-10;
             var yBotCenter = fieldY-10;
             //console.log('fieldx', fieldX, 'fieldy', fieldY);
@@ -268,24 +330,70 @@
                 field.appendChild(line);
             }
         }
-        function autoScoring(e){
-            console.log('autoScoring');
-            if(e.target.id == 'speakerBtn'){
-                autoSpeaker++;
-                document.getElementById('speakerBtn').innerHTML = "Speaker Shots:" + autoSpeaker;
-            }else if(e.target.id == "ampBtn"){
-                autoAmp++;
-                document.getElementById('ampBtn').innerHTML = "Amp Shots:" + autoAmp;
-            }else if(e.target.id == "ssub" && autoSpeaker > 0){
-                autoSpeaker--;
-                document.getElementById('speakerBtn').innerHTML = "Speaker Shots:" + autoSpeaker;
-            }else if(e.target.id == "asub" && autoAmp > 0){
-                autoAmp--;
-                document.getElementById('ampBtn').innerHTML = "Amp Shots:" + autoAmp;
+        function noAuto(){
+            noAutoBool = document.getElementById('noAuto').checked;
+            if(noAutoBool){
+                document.getElementById('timing').innerHTML = "Time Left: 15 seconds"
+                timeLeft = 15;
+                previousClicks.push("Please");
+                console.log(previousClicks);
+
+            }else{
+                document.getElementById('timing').innerHTML = "Time Left: 0 seconds"
+                timeLeft = 0;
+                previousClicks.push("data");
+                console.log(previousClicks);
+
             }
-        
+        }
         function distFormula(point1, point2) {
             return Math.sqrt(Math.pow(point2[0] - point1[0], 2) + Math.pow(point2[1] - point1[1], 2));
+        }
+        // Function to animate the bot along the given points
+        function animate(currentTime, pointIndex) {
+            if (!startTime) {
+                startTime = currentTime;
+            }
+
+            const elapsedTime = currentTime - startTime;
+            const progress = Math.min(elapsedTime / durations[pointIndex], 1);
+
+            const currentPoint = clicks[pointIndex];
+            const nextPoint = clicks[pointIndex + 1];
+            const newX = currentPoint[0] + (nextPoint[0] - currentPoint[0]) * progress;
+            const newY = currentPoint[1] + (nextPoint[1] - currentPoint[1]) * progress;
+
+            bot.style.left = newX + 'px';
+            bot.style.top = newY + 'px';
+
+            if (progress < 1) {
+                requestAnimationFrame((timestamp) => animate(timestamp, pointIndex));
+            } else if (pointIndex < clicks.length - 2) {
+                startTime = currentTime;
+                requestAnimationFrame((timestamp) => animate(timestamp, pointIndex + 1));
+            } else if (timeLeft > 0 && elapsedTime >= totalAnimationTime) {
+                // If there is time left and the total animation time has completed,
+                // let the bot sit there for the remaining time
+                const remainingTime = totalAnimationTime + timeLeft - elapsedTime;
+                setTimeout(() => {
+                    bot.style.left = clicks[clicks.length - 1][0] + 'px';
+                    bot.style.top = clicks[clicks.length - 1][1] + 'px';
+                }, remainingTime);
+            }
+        }
+        function animateBot(){
+            bot.style.transform = "rotate(0deg)";
+            startTime = null;
+            totalAnimationTime = 15000 - timeLeft*1000;
+            totalDistance = clicks.reduce((acc, cur, index) => {
+                if (index === clicks.length - 1) return acc;
+                return acc + distFormula(cur, clicks[index + 1]);
+            }, 0);
+            durations = clicks.map((point, index) => {
+                if (index === clicks.length - 1) return 0;
+                return (distFormula(point, clicks[index + 1]) / totalDistance) * totalAnimationTime;
+            });
+            animate(performance.now(), 0);
         }
         function saveTeamInfo(button){
             previousClicks.push('now');
@@ -314,60 +422,6 @@
             bot.style.display = 'block';
             bot.style.backgroundColor = bgColor;
             bot.innerHTML = teamNum;
-        }
-        function speakerAdd(num){
-            if(autoSpeaker + num >= 0){
-                autoSpeaker += num;
-            }
-            document.getElementById('speakerBtn').innerHTML = "Speaker Shots: " + autoSpeaker;
-        }
-        function ampAdd(num){
-            if(autoAmp + num >= 0){
-                autoAmp += num;
-            }
-            document.getElementById('ampBtn').innerHTML = "Amp Shots: " + autoAmp;
-        }
-        function timing(e){
-            console.log('timing');
-            if(e.target.id == 'timing' && timeLeft < 15){
-                timeLeft++;
-                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
-            }else if(e.target.id == 'sub' && timeLeft > 0){
-                timeLeft--;
-                document.getElementById('timing').innerHTML = "Time Left: " + timeLeft + " seconds";
-            }
-        }
-        function noAuto(){
-            noAutoBool = document.getElementById('noAuto').checked;
-            if(noAutoBool){
-                document.getElementById('timing').innerHTML = "Time Left: 15 seconds"
-                timeLeft = 15;
-                previousClicks.push("Please");
-                console.log(previousClicks);
-
-            }else{
-                document.getElementById('timing').innerHTML = "Time Left: 0 seconds"
-                timeLeft = 0;
-                previousClicks.push("data");
-                console.log(previousClicks);
-
-            }
-        }
-        function resetBotMovement(){
-            var lines = document.getElementsByClassName('line');
-            for(var i = 0; i < lines.length; i+=0){
-                lines[i].remove();
-            }
-            clicks = [];
-            grabNotes = [];
-            scoreNote = [];
-            movingBot = true;
-            moved = true;
-            bot.style.borderColor = '#000';
-            bot.style.top = '0px';
-            bot.style.left = '165px';
-            bot.style.transform = 'rotate(0deg)';
-            startingRing.style.display = "none";
         }
     </script>
 </body>

@@ -4,23 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Game Canvas with Gravity</title>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <style>
     canvas {
         border: 1px solid black;
     }
 </style>
 </head>
-
 <body>
 <canvas id="gameCanvas" width="800" height="400"></canvas>
 <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js"></script>
 <script>
-    //initializes canvas
-    var canvas = document.getElementById("gameCanvas");
-    var ctx = canvas.getContext("2d");
-
-    //initalizes firebase
     const firebaseConfig = {
         apiKey: "AIzaSyD5aNloa6l4xAyIKSP78bU_Hjl_iRRoJKA",
         authDomain: "volleyball-game-5344a.firebaseapp.com",
@@ -35,50 +28,136 @@
     firebase.initializeApp(firebaseConfig);
     var server = firebase.database().ref('server-0');
     
+    var canvas = document.getElementById("gameCanvas");
+    var ctx = canvas.getContext("2d");
 
-    function drawRectangle(x, y, width, height) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-            ctx.fillStyle = "blue"; // Set rectangle color
-            ctx.fillRect(x, y, width, height); // Draw rectangle
+    // Object properties
+    var object = {
+        x: 50,
+        y: 50,
+        width: 50,
+        height: 50,
+        // Velocity in pixels per frame
+        velocityX: 5,
+        velocityY: 0,
+        // Acceleration due to gravity
+        gravity: 0.2, 
+        moveable: true,
+        color: "#FF0000",
+    };
+    var floor = {
+        x: 0,
+        y: canvas.height-10,
+        width: canvas.width,
+        height: 10,
+        // No velocity
+        velocityX: 0,
+        velocityY: 0,
+        //No gravity
+        gravity: 0,
+        moveable: false,
+        color: "#000000",
+    }
+    var player = {
+        x: 50,
+        y: canvas.height-100,
+        width: 40,
+        height: 100,
+        velocityX: 0,
+        velocityY: 0,
+        // Acceleration due to gravity
+        gravity: 0.2, 
+        moveable: true,
+        color: "#0000FF",
+        speed: 5,
+    }
+    var movingObjArr = [object, player];
+
+    // Set the desired frame rate (frames per second)
+    var fps = 60;
+    // Calculate the time interval between frames in milliseconds
+    var interval = 1000 / fps;
+
+    function handleKeyDown(event) {
+        if (event.key === "ArrowLeft") {
+            player.velocityX = -player.speed;
+        } else if (event.key === "ArrowRight") {
+            player.velocityX = player.speed;
         }
+        console.log(event.key, event.timeStamp, player.velocityX);
+    }
 
-        // Real-time listener for changes in the RTDB
-        server.on('value', function(snapshot) {
+    function handleKeyUp(event) {
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+            player.velocityX = 0;
+        }
+        console.log("keyUp");
+    }
+
+    // Event listeners for keyboard input
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+
+    server.on('value', function(snapshot) {
             var serverData = snapshot.val();
             console.log(serverData, serverData.player1.xPos);
             console.log("changed data");
-            // Assuming the server data contains properties for rectangle dimensions (x, y, width, height)
-            var rectX = serverData.player1.xPos;
-            var rectY = serverData.player1.yPos;
-            var rectWidth = 10;
-            var rectHeight = 10;
-            // Draw the updated rectangle
-            drawRectangle(rectX, rectY, rectWidth, rectHeight);
+
+            if(player.x == serverData.player1.xPos && player.y == serverData.player1.xPos){
+                var serverMessage = server.child("player1");
+                serverMessage.set({
+                    xPos: player.x,
+                    yPos: player.y,
+                });
+            }
+            player.x = serverData.player1.xPos;
+            player.y = serverData.player1.yPos; 
         }, function(error) {
             console.error('Error fetching data:', error);
         });
-    //gets and reads the data from the rtdb
-    // async function getData() {
-    //     try {
-    //         const serverData = await readData();
-    //         console.log(serverData);
-            
-    //     } catch (error) {
-    //         console.error('Error fetching and processing data:', error);
-    //     }
-    // }
-    // function readData() {
-    //     return new Promise((resolve, reject) => {
-    //         const teamData = [];
-    //         teams.once('value', (snapshot) => {
-    //             const data = snapshot.val();
-    //             resolve(data);
-    //         }, (error) => {
-    //             reject(error);
-    //         });
-    //     });
-    // }
 
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for(var i = 0; i < movingObjArr.length; i++){
+            if(movingObjArr[i].moveable == true){
+                //acceleration effects velocity
+                movingObjArr[i].velocityY += movingObjArr[i].gravity;
+
+                //velcity effects position
+                movingObjArr[i].x += movingObjArr[i].velocityX;
+                movingObjArr[i].y += movingObjArr[i].velocityY;
+
+                //keeps in boundries
+                if(movingObjArr[i].x + movingObjArr[i].width >= canvas.width){
+                    movingObjArr[i].velocityX *= -1;
+                    movingObjArr[i].x -= (movingObjArr[i].x + movingObjArr[i].width - canvas.width)*2;
+                }else if(movingObjArr[i].x <= 0){
+                    movingObjArr[i].velocityX *= -1;
+                    movingObjArr[i].x -= movingObjArr[i].x*2;
+                }
+                if(movingObjArr[i].y + movingObjArr[i].height >= canvas.height){
+                    movingObjArr[i].velocityY *= -1;
+                    movingObjArr[i].y -= (movingObjArr[i].y + movingObjArr[i].height - canvas.height)*2;
+                }
+            }
+            var serverMessage = server.child("player1");
+            serverMessage.set({
+                xPos: player.x,
+                yPos: player.y,
+            });
+
+            //draws object
+            ctx.fillStyle = movingObjArr[i].color;
+            ctx.fillRect(movingObjArr[i].x, movingObjArr[i].y, movingObjArr[i].width, movingObjArr[i].height);
+        }
+
+        // Schedule the next update after the specified interval
+        setTimeout(update, interval);
+    }
+
+    // Start the game loop
+    update();
 
 </script>
 </body>

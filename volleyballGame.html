@@ -99,26 +99,24 @@
     document.addEventListener("keyup", handleKeyUp);
 
     server.on('value', function(snapshot) {
+        console.log("get");
             var serverData = snapshot.val();
-            console.log(serverData, serverData.player1.xPos);
-            console.log("changed data");
 
-            if(player.x == serverData.player1.xPos && player.y == serverData.player1.xPos){
-                var serverMessage = server.child("player1");
-                serverMessage.set({
-                    xPos: player.x,
-                    yPos: player.y,
-                });
-            }
-            player.x = serverData.player1.xPos;
-            player.y = serverData.player1.yPos; 
+            // if(Math.round(player.x) == Math.round(serverData.player1.xPos) && Math.round(player.y) == Math.round(serverData.player1.xPos)){
+            //     var serverMessage = server.child("player1");
+            //     serverMessage.set({
+            //         xPos: player.x,
+            //         yPos: player.y,
+            //     });
+            // }
+            player.x = Math.round(serverData.player1.xPos);
+            player.y = Math.round(serverData.player1.yPos); 
         }, function(error) {
             console.error('Error fetching data:', error);
         });
 
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         for(var i = 0; i < movingObjArr.length; i++){
             if(movingObjArr[i].moveable == true){
                 //acceleration effects velocity
@@ -141,17 +139,20 @@
                     movingObjArr[i].y -= (movingObjArr[i].y + movingObjArr[i].height - canvas.height)*2;
                 }
             }
-            var serverMessage = server.child("player1");
-            serverMessage.set({
-                xPos: player.x,
-                yPos: player.y,
-            });
+            
 
             //draws object
             ctx.fillStyle = movingObjArr[i].color;
             ctx.fillRect(movingObjArr[i].x, movingObjArr[i].y, movingObjArr[i].width, movingObjArr[i].height);
         }
-
+        var currentDate = new Date();
+        var serverMessage = server.child("player1");
+        serverMessage.set({
+            xPos: Math.round(player.x),
+            yPos: Math.round(player.y),
+            time: currentDate.getMilliseconds(),
+        });
+        console.log("set");
         // Schedule the next update after the specified interval
         setTimeout(update, interval);
     }

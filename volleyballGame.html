@@ -91,23 +91,15 @@
             player.x += player.velocityX;
             player.y += player.velocityY;
             if (player.x + player.width >= canvas.width) {
-                player.velocityX *= -1;
-                player.x -= (player.x + player.width - canvas.width) * 2;
+                player.velocityX *= -1*player.bounciness;
+                player.x -= (player.x + player.width - canvas.width) * (1 + player.bounciness);
             } else if (player.x <= 0) {
-                player.velocityX *= -1;
-                player.x -= player.x * 2;
+                player.velocityX *= -1*player.bounciness;
+                player.x -= player.x * (1+player.bounciness);
             }
             if (player.y + player.height >= canvas.height) {
-                console.log(1);
-                if(player.bounciness > 0){
-                    console.log(2, player.y);
-                    player.velocityY *= -1*player.bounciness;
-                    player.y -= (player.y + player.height - canvas.height) * (1 + player.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
-                }else{
-                    console.log(3);
-                    player.y = canvas.height - player.height;
-                    player.velocityY = 0;
-                }
+                player.velocityY *= -1*player.bounciness;
+                player.y -= (player.y + player.height - canvas.height) * (1 + player.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
             }
         }
     }

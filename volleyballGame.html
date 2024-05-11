@@ -131,10 +131,15 @@
     var serverData = snapshot.val();
     if (serverData && serverData.player1) {
         // Use the server data if available, otherwise fallback to player.x
-        player.x = Math.round((serverData.player1.x !== undefined ? serverData.player1.x : player.x) * 100) / 100;
-        player.y = Math.round((serverData.player1.y !== undefined ? serverData.player1.y : player.y) * 100) / 100; 
+        if(Math.round(serverData.player1.vX) == 0){
+            player.x = Math.round((serverData.player1.x !== undefined ? serverData.player1.x : player.x) * 100) / 100;
+        }
         player.velocityX = Math.round((serverData.player1.vX !== undefined ? serverData.player1.vX : player.velocityX) * 100) / 100;
+        if(Math.round(serverData.player1.vY) == 0){
+            player.y = Math.round((serverData.player1.y !== undefined ? serverData.player1.y : player.y) * 100) / 100; 
+        }
         player.velocityY = Math.round((serverData.player1.vY !== undefined ? serverData.player1.vY : player.velocityY) * 100) / 100;
+        
     } else {
         // Handle missing or invalid data
         console.error('Invalid data received from server');

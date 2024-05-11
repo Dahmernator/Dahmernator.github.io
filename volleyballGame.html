@@ -39,10 +39,12 @@
         velocityX: 0,
         velocityY: 0,
         accelX: 0,
-        gravity: 0.2,
+        gravity: 0.5,
         moveable: true,
         color: "#0000FF",
         speed: 5,
+        jump: -10,
+        bounciness: 0,//from 0-1
     };
 
     var movingObjArr = [player];
@@ -53,7 +55,13 @@
             player.velocityX = -player.speed;
         } else if (event.key === "ArrowRight") {
             player.velocityX = player.speed;
+        } else if (event.key === " "){
+            console.log("space");
+            if(playerIsGrounded()){
+                player.velocityY = player.jump;
+            }
         }
+        console.log(event.key, 'down');
         updateFirebase();
     }
 
@@ -90,8 +98,16 @@
                 player.x -= player.x * 2;
             }
             if (player.y + player.height >= canvas.height) {
-                player.velocityY *= -1;
-                player.y -= (player.y + player.height - canvas.height) * 2;
+                console.log(1);
+                if(player.bounciness > 0){
+                    console.log(2, player.y);
+                    player.velocityY *= -1*player.bounciness;
+                    player.y -= (player.y + player.height - canvas.height) * (1 + player.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
+                }else{
+                    console.log(3);
+                    player.y = canvas.height - player.height;
+                    player.velocityY = 0;
+                }
             }
         }
     }
@@ -100,6 +116,13 @@
     function drawPlayer(player) {
         ctx.fillStyle = player.color;
         ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function playerIsGrounded(){
+        if(canvas.height == Math.round(player.height + player.y)){
+            return true
+        }
+        return false
     }
 
     // Function to update Firebase with player's position
@@ -117,16 +140,6 @@
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
 
-    // Firebase event listener to update player's position
-    // server.on('value', function(snapshot) {
-    //     var serverData = snapshot.val();
-    //     player.x = Math.round(serverData.player1.x);
-    //     player.y = Math.round(serverData.player1.y); 
-    //     player.velocityX = serverData.player1.vX;
-    //     player.velocityY = serverData.player1.vY;
-    // }, function(error) {
-    //     console.error('Error fetching data:', error);
-    // });
     server.on('value', function(snapshot) {
     var serverData = snapshot.val();
     if (serverData && serverData.player1) {
@@ -139,7 +152,7 @@
             player.y = Math.round((serverData.player1.y !== undefined ? serverData.player1.y : player.y) * 100) / 100; 
         }
         player.velocityY = Math.round((serverData.player1.vY !== undefined ? serverData.player1.vY : player.velocityY) * 100) / 100;
-        
+
     } else {
         // Handle missing or invalid data
         console.error('Invalid data received from server');

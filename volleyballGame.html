@@ -27,138 +27,123 @@
 
     firebase.initializeApp(firebaseConfig);
     var server = firebase.database().ref('server-0');
-    
+
     var canvas = document.getElementById("gameCanvas");
     var ctx = canvas.getContext("2d");
 
-    // Object properties
-    var object = {
-        x: 50,
-        y: 50,
-        width: 50,
-        height: 50,
-        // Velocity in pixels per frame
-        velocityX: 5,
-        velocityY: 0,
-        // Acceleration due to gravity
-        gravity: 0.2, 
-        moveable: true,
-        color: "#FF0000",
-    };
-    var floor = {
-        x: 0,
-        y: canvas.height-10,
-        width: canvas.width,
-        height: 10,
-        // No velocity
-        velocityX: 0,
-        velocityY: 0,
-        //No gravity
-        gravity: 0,
-        moveable: false,
-        color: "#000000",
-    }
     var player = {
         x: 50,
-        y: canvas.height-100,
+        y: canvas.height - 100,
         width: 40,
         height: 100,
         velocityX: 0,
         velocityY: 0,
-        // Acceleration due to gravity
-        gravity: 0.2, 
+        accelX: 0,
+        gravity: 0.2,
         moveable: true,
         color: "#0000FF",
         speed: 5,
-    }
-    var movingObjArr = [object, player];
+    };
 
-    // Set the desired frame rate (frames per second)
-    var fps = 60;
-    // Calculate the time interval between frames in milliseconds
-    var interval = 1000 / fps;
+    var movingObjArr = [player];
 
+    // Function to handle key down events
     function handleKeyDown(event) {
         if (event.key === "ArrowLeft") {
             player.velocityX = -player.speed;
         } else if (event.key === "ArrowRight") {
             player.velocityX = player.speed;
         }
-        console.log(event.key, event.timeStamp, player.velocityX);
+        updateFirebase();
     }
 
+    // Function to handle key up events
     function handleKeyUp(event) {
         if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
             player.velocityX = 0;
         }
-        console.log("keyUp");
+        updateFirebase();
+    }
+
+    // Function to update game state
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < movingObjArr.length; i++) {
+            updatePlayer(movingObjArr[i]);
+            drawPlayer(movingObjArr[i]);
+        }
+        requestAnimationFrame(update);
+    }
+
+    // Function to update player's position and handle collisions
+    function updatePlayer(player) {
+        if (player.moveable) {
+            player.velocityX += player.accelX;
+            player.velocityY += player.gravity;
+            player.x += player.velocityX;
+            player.y += player.velocityY;
+            if (player.x + player.width >= canvas.width) {
+                player.velocityX *= -1;
+                player.x -= (player.x + player.width - canvas.width) * 2;
+            } else if (player.x <= 0) {
+                player.velocityX *= -1;
+                player.x -= player.x * 2;
+            }
+            if (player.y + player.height >= canvas.height) {
+                player.velocityY *= -1;
+                player.y -= (player.y + player.height - canvas.height) * 2;
+            }
+        }
+    }
+
+    // Function to draw player on canvas
+    function drawPlayer(player) {
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    // Function to update Firebase with player's position
+    function updateFirebase() {
+        var serverMessage = server.child("player1");
+        serverMessage.set({
+            x: player.x,
+            y: player.y,
+            vX: player.velocityX,
+            vY: player.velocityY,
+        });
     }
 
     // Event listeners for keyboard input
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
 
+    // Firebase event listener to update player's position
+    // server.on('value', function(snapshot) {
+    //     var serverData = snapshot.val();
+    //     player.x = Math.round(serverData.player1.x);
+    //     player.y = Math.round(serverData.player1.y); 
+    //     player.velocityX = serverData.player1.vX;
+    //     player.velocityY = serverData.player1.vY;
+    // }, function(error) {
+    //     console.error('Error fetching data:', error);
+    // });
     server.on('value', function(snapshot) {
-        console.log("get");
-            var serverData = snapshot.val();
-
-            // if(Math.round(player.x) == Math.round(serverData.player1.xPos) && Math.round(player.y) == Math.round(serverData.player1.xPos)){
-            //     var serverMessage = server.child("player1");
-            //     serverMessage.set({
-            //         xPos: player.x,
-            //         yPos: player.y,
-            //     });
-            // }
-            player.x = Math.round(serverData.player1.xPos);
-            player.y = Math.round(serverData.player1.yPos); 
-        }, function(error) {
-            console.error('Error fetching data:', error);
-        });
-
-    function update() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for(var i = 0; i < movingObjArr.length; i++){
-            if(movingObjArr[i].moveable == true){
-                //acceleration effects velocity
-                movingObjArr[i].velocityY += movingObjArr[i].gravity;
-
-                //velcity effects position
-                movingObjArr[i].x += movingObjArr[i].velocityX;
-                movingObjArr[i].y += movingObjArr[i].velocityY;
-
-                //keeps in boundries
-                if(movingObjArr[i].x + movingObjArr[i].width >= canvas.width){
-                    movingObjArr[i].velocityX *= -1;
-                    movingObjArr[i].x -= (movingObjArr[i].x + movingObjArr[i].width - canvas.width)*2;
-                }else if(movingObjArr[i].x <= 0){
-                    movingObjArr[i].velocityX *= -1;
-                    movingObjArr[i].x -= movingObjArr[i].x*2;
-                }
-                if(movingObjArr[i].y + movingObjArr[i].height >= canvas.height){
-                    movingObjArr[i].velocityY *= -1;
-                    movingObjArr[i].y -= (movingObjArr[i].y + movingObjArr[i].height - canvas.height)*2;
-                }
-            }
-            
-
-            //draws object
-            ctx.fillStyle = movingObjArr[i].color;
-            ctx.fillRect(movingObjArr[i].x, movingObjArr[i].y, movingObjArr[i].width, movingObjArr[i].height);
-        }
-        var currentDate = new Date();
-        var serverMessage = server.child("player1");
-        serverMessage.set({
-            xPos: Math.round(player.x),
-            yPos: Math.round(player.y),
-            time: currentDate.getMilliseconds(),
-        });
-        console.log("set");
-        // Schedule the next update after the specified interval
-        setTimeout(update, interval);
+    var serverData = snapshot.val();
+    if (serverData && serverData.player1) {
+        // Use the server data if available, otherwise fallback to player.x
+        player.x = Math.round((serverData.player1.x !== undefined ? serverData.player1.x : player.x) * 100) / 100;
+        player.y = Math.round((serverData.player1.y !== undefined ? serverData.player1.y : player.y) * 100) / 100; 
+        player.velocityX = Math.round((serverData.player1.vX !== undefined ? serverData.player1.vX : player.velocityX) * 100) / 100;
+        player.velocityY = Math.round((serverData.player1.vY !== undefined ? serverData.player1.vY : player.velocityY) * 100) / 100;
+    } else {
+        // Handle missing or invalid data
+        console.error('Invalid data received from server');
     }
-
+}, function(error) {
+    console.error('Error fetching data:', error);
+});
     // Start the game loop
-    update();
+    requestAnimationFrame(update);
 
 </script>
 </body>

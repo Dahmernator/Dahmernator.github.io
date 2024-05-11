@@ -34,7 +34,7 @@
     var player = {
         x: 50,
         y: canvas.height - 100,
-        width: 40,
+        width: 30,
         height: 100,
         velocityX: 0,
         velocityY: 0,
@@ -45,9 +45,49 @@
         speed: 5,
         jump: -10,
         bounciness: 0,//from 0-1
+        facing: true,//true means right, fasle means left
+        follows: null,
     };
+    var playerArm = {
+        x: player.x + 16,
+        y: player.y + 30,
+        width: 14,
+        height: 50,
+        velocityX: 0,
+        velocityY: 0,
+        accelX: 0,
+        gravity: 0,
+        moveable: false,
+        color: "#000000",
+        speed: 0,
+        jump: 0,
+        bounciness: 0,//from 0-1
+        facing: 1,//1 means right, -1 means left
+        follows: player,
+        followsXOff: 16,
+        followsYOff: 30,
+    }
+    var playerHead = {
+        x: player.x,
+        y: player.y,
+        width: 30,
+        height: 30,
+        velocityX: 0,
+        velocityY: 0,
+        accelX: 0,
+        gravity: 0,
+        moveable: false,
+        color: "#d6c498",
+        speed: 0,
+        jump: 0,
+        bounciness: 0,//from 0-1
+        facing: 1,//1 means right, -1 means left
+        follows: player,
+        followsXOff: 0,
+        followsYOff: 0,
+    }
 
-    var movingObjArr = [player];
+    var movingObjArr = [player, playerArm, playerHead];
 
     // Function to handle key down events
     function handleKeyDown(event) {
@@ -61,7 +101,6 @@
                 player.velocityY = player.jump;
             }
         }
-        console.log(event.key, 'down');
         updateFirebase();
     }
 
@@ -101,6 +140,17 @@
                 player.velocityY *= -1*player.bounciness;
                 player.y -= (player.y + player.height - canvas.height) * (1 + player.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
             }
+            if(player.velocityX != 0){
+                player.facing = Math.round(player.velocityX/Math.abs(player.velocityX));
+            }
+        }
+        if(player.follows != null){
+            if(player.follows.facing == 1){
+                player.x = player.follows.x + player.followsXOff;
+            }else{
+                player.x = player.follows.x;
+            }
+            player.y = player.follows.y + player.followsYOff;
         }
     }
 

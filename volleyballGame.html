@@ -47,6 +47,8 @@
         bounciness: 0,//from 0-1
         facing: true,//true means right, fasle means left
         follows: null,
+        swinging: false,
+        startSwing: null,//in milliseconds
     };
     var playerArm = {
         x: player.x + 16,
@@ -58,7 +60,7 @@
         accelX: 0,
         gravity: 0,
         moveable: false,
-        color: "#000000",
+        color: "#000080",
         speed: 0,
         jump: 0,
         bounciness: 0,//from 0-1
@@ -100,6 +102,18 @@
             if(playerIsGrounded()){
                 player.velocityY = player.jump;
             }
+        }else if(event.key === "ArrowUp"){
+            if(!player.swinging){//if not swinging then swing animation
+                player.swinging = true;
+                player.startSwing = Date.now();
+                spikeSwing(player);
+            }
+        }else if(event.key === "ArrowDown"){
+            if(!player.swinging){
+                player.swinging = true;
+                player.startSwing = Date.now();
+                setSwing(player);
+            }
         }
         updateFirebase();
     }
@@ -140,7 +154,7 @@
                 player.velocityY *= -1*player.bounciness;
                 player.y -= (player.y + player.height - canvas.height) * (1 + player.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
             }
-            if(player.velocityX != 0){
+            if(player.velocityX != 0 && player.swinging == false){
                 player.facing = Math.round(player.velocityX/Math.abs(player.velocityX));
             }
         }
@@ -165,6 +179,13 @@
             return true
         }
         return false
+    }
+
+    function spikeSwing(player){
+
+    }
+    function setSwing(player){
+
     }
 
     // Function to update Firebase with player's position

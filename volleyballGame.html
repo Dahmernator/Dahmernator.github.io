@@ -31,65 +31,57 @@
     var canvas = document.getElementById("gameCanvas");
     var ctx = canvas.getContext("2d");
 
+    var pi = 3.14159;
+    var duration = 300;//in ms for swings
+    var d = [Math.sqrt(98), Math.sqrt(98), Math.sqrt(1898), Math.sqrt(1898)];//caluculated from desmos graph
+
+    var playerX = 50;
+    var playerY = canvas.height - 100;
     var player = {
-        x: 50,
-        y: canvas.height - 100,
+        x: playerX,
+        y: playerY,
         width: 30,
         height: 100,
         velocityX: 0,
         velocityY: 0,
         accelX: 0,
         gravity: 0.5,
-        moveable: true,
         color: "#0000FF",
         speed: 5,
         jump: -10,
         bounciness: 0,//from 0-1
-        facing: true,//true means right, fasle means left
-        follows: null,
-        swinging: false,
-        startSwing: null,//in milliseconds
-    };
-    var playerArm = {
-        x: player.x + 16,
-        y: player.y + 30,
-        width: 14,
-        height: 50,
-        velocityX: 0,
-        velocityY: 0,
-        accelX: 0,
-        gravity: 0,
-        moveable: false,
-        color: "#000080",
-        speed: 0,
-        jump: 0,
-        bounciness: 0,//from 0-1
-        facing: 1,//1 means right, -1 means left
-        follows: player,
-        followsXOff: 16,
-        followsYOff: 30,
+        facing: 1,//1 means right -1 means left
+        arm:  {
+            width: 14,
+            height: 50,
+            x: playerX + 16,
+            y: playerY,
+            x1: playerX + 16,
+            y1: playerY + 30,
+            x2: playerX + 30,
+            y2: playerY + 30,
+            x3: playerX + 30,
+            y3: playerY + 80,
+            x4: playerX + 16,
+            y4: playerY + 80,
+            color: "#000080",
+            animationCompletion: 0,/*from 0-1*/
+            swingType: "none",
+            swinging: false,
+            startSwing: null,//in milliseconds
+        },
+        head: {
+            x: playerX,
+            y: playerY,
+            width: 30,
+            height: 30,
+            color: "#d6c498",   
+        },
     }
-    var playerHead = {
-        x: player.x,
-        y: player.y,
-        width: 30,
-        height: 30,
-        velocityX: 0,
-        velocityY: 0,
-        accelX: 0,
-        gravity: 0,
-        moveable: false,
-        color: "#d6c498",
-        speed: 0,
-        jump: 0,
-        bounciness: 0,//from 0-1
-        facing: 1,//1 means right, -1 means left
-        follows: player,
-        followsXOff: 0,
-        followsYOff: 0,
-    }
-
-    var movingObjArr = [player, playerArm, playerHead];
+    // var playerArm = {x: player.x + 16,y: player.y + 30,width: 14,height: 50,velocityX: 0,velocityY: 0,accelX: 0,gravity: 0,moveable: false,color: "#000080",speed: 0,jump: 0,bounciness: 0,/*from 0-1*/facing: 1,/*1 means right, -1 means left*/follows: player,followsXOff: 16,followsYOff: 30,poly: true,x2: player.x + 30,y2: player.y + 30,x3: player.x + 30,y3: player.y + 80,x4: player.x + 16,y4: player.y + 80,animationCompletion: 0,/*from 0-1*/swingType: "none",};
+    // player.arm = playerArm;
+    // var playerHead = {x: player.x,y: player.y,width: 30,height: 30,velocityX: 0,velocityY: 0,accelX: 0,gravity: 0,moveable: false,color: "#d6c498",speed: 0,jump: 0,bounciness: 0,/*from 0-1*/facing: 1,/*1 means right, -1 means left*/follows: player,followsXOff: 0,followsYOff: 0,};
+    var movingObjArr = [player];
 
     // Function to handle key down events
     function handleKeyDown(event) {
@@ -98,7 +90,6 @@
         } else if (event.key === "ArrowRight") {
             player.velocityX = player.speed;
         } else if (event.key === " "){
-            console.log("space");
             if(playerIsGrounded()){
                 player.velocityY = player.jump;
             }
@@ -109,9 +100,9 @@
                 spikeSwing(player);
             }
         }else if(event.key === "ArrowDown"){
-            if(!player.swinging){
-                player.swinging = true;
-                player.startSwing = Date.now();
+            if(!player.arm.swinging){
+                player.arm.swinging = true;
+                player.arm.startSwing = Date.now();
                 setSwing(player);
             }
         }
@@ -129,51 +120,98 @@
     // Function to update game state
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+ 
         for (var i = 0; i < movingObjArr.length; i++) {
             updatePlayer(movingObjArr[i]);
             drawPlayer(movingObjArr[i]);
         }
+        //console.log(player, playerArm, playerHead);
         requestAnimationFrame(update);
     }
 
     // Function to update player's position and handle collisions
-    function updatePlayer(player) {
-        if (player.moveable) {
-            player.velocityX += player.accelX;
-            player.velocityY += player.gravity;
-            player.x += player.velocityX;
-            player.y += player.velocityY;
-            if (player.x + player.width >= canvas.width) {
-                player.velocityX *= -1*player.bounciness;
-                player.x -= (player.x + player.width - canvas.width) * (1 + player.bounciness);
-            } else if (player.x <= 0) {
-                player.velocityX *= -1*player.bounciness;
-                player.x -= player.x * (1+player.bounciness);
-            }
-            if (player.y + player.height >= canvas.height) {
-                player.velocityY *= -1*player.bounciness;
-                player.y -= (player.y + player.height - canvas.height) * (1 + player.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
-            }
-            if(player.velocityX != 0 && player.swinging == false){
-                player.facing = Math.round(player.velocityX/Math.abs(player.velocityX));
-            }
+    function updatePlayer(p) {
+        //moves to new position
+        p.velocityX += p.accelX;
+        p.velocityY += p.gravity;
+        p.x += p.velocityX;
+        p.y += p.velocityY;
+        //checks within bounds
+        stayWithinX(p);
+        stayWithinY(p);
+
+        //when player has a velocity and isn't swinging, then it can change way its facing
+        if(p.velocityX != 0 && p.arm.swinging == false){
+            p.facing = Math.round(p.velocityX/Math.abs(p.velocityX));
         }
-        if(player.follows != null){
-            if(player.follows.facing == 1){
-                player.x = player.follows.x + player.followsXOff;
+        
+        //sets constant "starting position"
+        if(p.facing == 1){
+            p.arm.x = p.x + 16;
+            p.arm.y = p.y + 30;
+        }else if (p.facing == -1){
+            p.arm.x = p.x;
+            p.arm.y = p.y + 30;
+        }
+        //if not swinging then set the arm values like normal rectangle
+        if(!p.arm.swinging){
+            if(p.facing == 1){
+                p.arm.x1 = p.x + 16;
             }else{
-                player.x = player.follows.x;
+                p.arm.x1 = p.x;
             }
-            player.y = player.follows.y + player.followsYOff;
+            p.arm.y1 = p.y + 30;
+            p.arm.x2 = p.arm.x1+p.arm.width;
+            p.arm.y2 = p.arm.y1;
+            p.arm.x3 = p.arm.x1+p.arm.width;
+            p.arm.y3 = p.arm.y1+p.arm.height;
+            p.arm.x4 = p.arm.x1;
+            p.arm.y4 = p.arm.y1+p.arm.height;
+            console.log('not swinging');
+        //if swinging and time spent swinging is less than the swing duration in ms, set the swing
+        }else if(p.arm.swinging && (Date.now()-p.arm.startSwing) < duration){
+            setSwing(p);
+        //if swinging and time spent is too long the end the swing
+        }else if(p.arm.swinging && (Date.now()-p.arm.startSwing) > duration){
+            p.arm.swinging = false;
+            p.arm.startSwing = null;
         }
     }
 
     // Function to draw player on canvas
-    function drawPlayer(player) {
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+    function drawPlayer(p) {
+        //rectangle for player 
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.width, p.height);
+        //for head
+        ctx.fillStyle = p.head.color;
+        ctx.fillRect(p.x, p.y, p.head.width, p.head.height);
+        //polygon for arm
+        ctx.fillStyle = p.arm.color;
+        ctx.beginPath();
+        ctx.moveTo(p.arm.x1, p.arm.y1);
+        ctx.lineTo(p.arm.x2, p.arm.y2);
+        ctx.lineTo(p.arm.x3, p.arm.y3);
+        ctx.lineTo(p.arm.x4, p.arm.y4);
+        ctx.closePath()
+        ctx.fill(); 
     }
 
+    function stayWithinX(p){
+        if (p.x + p.width >= canvas.width) {
+            p.velocityX *= -1*p.bounciness;
+            p.x -= (p.x + p.width - canvas.width) * (1 + p.bounciness);
+        } else if (p.x <= 0) {
+            p.velocityX *= -1*p.bounciness;
+            p.x -= p.x * (1+p.bounciness);
+        }
+    }
+    function stayWithinY(p){
+        if (p.y + p.height >= canvas.height) {
+            p.velocityY *= -1*p.bounciness;
+            p.y -= (p.y + p.height - canvas.height) * (1 + p.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
+        }
+    }
     function playerIsGrounded(){
         if(canvas.height == Math.round(player.height + player.y)){
             return true
@@ -181,11 +219,30 @@
         return false
     }
 
-    function spikeSwing(player){
+    function spikeSwing(p){
 
     }
-    function setSwing(player){
-
+    function setSwing(p){
+        var progress = (Date.now()-p.arm.startSwing)/duration;//from 0-1 to animated the swing fully
+        if(p.facing == 1){
+            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(progress*pi*2/3+pi*3/4);
+            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(progress*pi*2/3+pi*3/4);
+            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(progress*pi*2/3+pi/4);
+            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(progress*pi*2/3+pi/4);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(progress*pi*2/3+Math.atan(-43/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(progress*pi*2/3+Math.atan(-43/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(progress*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(progress*pi*2/3+Math.atan(43/7)+pi);
+        }else if(p.facing == -1){
+            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(-progress*pi*2/3+pi*3/4);
+            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(-progress*pi*2/3+pi*3/4);
+            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(-progress*pi*2/3+pi/4);
+            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(-progress*pi*2/3+pi/4);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(-progress*pi*2/3+Math.atan(-43/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(-progress*pi*2/3+Math.atan(-43/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(-progress*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(-progress*pi*2/3+Math.atan(43/7)+pi);
+        }
     }
 
     // Function to update Firebase with player's position

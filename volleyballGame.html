@@ -32,8 +32,8 @@
     var ctx = canvas.getContext("2d");
 
     var pi = 3.14159;
-    var duration = 300;//in ms for swings
-    var d = [Math.sqrt(98), Math.sqrt(98), Math.sqrt(1898), Math.sqrt(1898)];//caluculated from desmos graph
+    var duration = 500;//in ms for swings
+    var d = [Math.sqrt(98), Math.sqrt(98), Math.sqrt(2858), Math.sqrt(2858)];//caluculated from desmos graph
 
     var playerX = 50;
     var playerY = canvas.height - 100;
@@ -41,7 +41,7 @@
         x: playerX,
         y: playerY,
         width: 30,
-        height: 100,
+        height: 120,
         velocityX: 0,
         velocityY: 0,
         accelX: 0,
@@ -53,7 +53,7 @@
         facing: 1,//1 means right -1 means left
         arm:  {
             width: 14,
-            height: 50,
+            height: 60,
             x: playerX + 16,
             y: playerY,
             x1: playerX + 16,
@@ -75,9 +75,20 @@
             y: playerY,
             width: 30,
             height: 30,
-            color: "#d6c498",   
+            color: "#d6c498",  
+            hairColor: "#473515", 
         },
     }
+    var volleyball = {
+        x: canvas.width / 2, // Initial x position
+        y: canvas.height / 2, // Initial y position
+        radius: 30,
+        x: 2, // Change in x (speed in x direction)
+        y: 2, // Change in y (speed in y direction)
+        velocityX: 0,
+        velocityY: 0,
+        gravity: -0.2,
+    };
     // var playerArm = {x: player.x + 16,y: player.y + 30,width: 14,height: 50,velocityX: 0,velocityY: 0,accelX: 0,gravity: 0,moveable: false,color: "#000080",speed: 0,jump: 0,bounciness: 0,/*from 0-1*/facing: 1,/*1 means right, -1 means left*/follows: player,followsXOff: 16,followsYOff: 30,poly: true,x2: player.x + 30,y2: player.y + 30,x3: player.x + 30,y3: player.y + 80,x4: player.x + 16,y4: player.y + 80,animationCompletion: 0,/*from 0-1*/swingType: "none",};
     // player.arm = playerArm;
     // var playerHead = {x: player.x,y: player.y,width: 30,height: 30,velocityX: 0,velocityY: 0,accelX: 0,gravity: 0,moveable: false,color: "#d6c498",speed: 0,jump: 0,bounciness: 0,/*from 0-1*/facing: 1,/*1 means right, -1 means left*/follows: player,followsXOff: 0,followsYOff: 0,};
@@ -94,15 +105,17 @@
                 player.velocityY = player.jump;
             }
         }else if(event.key === "ArrowUp"){
-            if(!player.swinging){//if not swinging then swing animation
-                player.swinging = true;
-                player.startSwing = Date.now();
+            if(!player.arm.swinging){//if not swinging then swing animation
+                player.arm.swinging = true;
+                player.arm.startSwing = Date.now();
+                player.arm.swingType = "spike";
                 spikeSwing(player);
             }
         }else if(event.key === "ArrowDown"){
             if(!player.arm.swinging){
                 player.arm.swinging = true;
                 player.arm.startSwing = Date.now();
+                player.arm.swingType = "set";
                 setSwing(player);
             }
         }
@@ -125,11 +138,15 @@
             updatePlayer(movingObjArr[i]);
             drawPlayer(movingObjArr[i]);
         }
+        moveBall();
         //console.log(player, playerArm, playerHead);
         requestAnimationFrame(update);
     }
 
     // Function to update player's position and handle collisions
+    function moveBall(){
+
+    }
     function updatePlayer(p) {
         //moves to new position
         p.velocityX += p.accelX;
@@ -167,14 +184,17 @@
             p.arm.y3 = p.arm.y1+p.arm.height;
             p.arm.x4 = p.arm.x1;
             p.arm.y4 = p.arm.y1+p.arm.height;
-            console.log('not swinging');
         //if swinging and time spent swinging is less than the swing duration in ms, set the swing
-        }else if(p.arm.swinging && (Date.now()-p.arm.startSwing) < duration){
+        }else if(p.arm.swingType == "set" && p.arm.swinging && (Date.now()-p.arm.startSwing) < duration){
             setSwing(p);
+        }else if(p.arm.swingType == "spike" && p.arm.swinging && (Date.now()-p.arm.startSwing) < duration){
+            console.log('swingType spike');
+            spikeSwing(p);
         //if swinging and time spent is too long the end the swing
         }else if(p.arm.swinging && (Date.now()-p.arm.startSwing) > duration){
             p.arm.swinging = false;
             p.arm.startSwing = null;
+            p.arm.swingType = "none";
         }
     }
 
@@ -186,6 +206,25 @@
         //for head
         ctx.fillStyle = p.head.color;
         ctx.fillRect(p.x, p.y, p.head.width, p.head.height);
+        //polygon for hair
+        ctx.fillStyle = p.head.hairColor;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        if(p.facing == 1){
+            ctx.lineTo(p.x+30, p.y);
+            ctx.lineTo(p.x+30, p.y+8);
+            ctx.lineTo(p.x+12, p.y+10);
+            ctx.lineTo(p.x, p.y+18);
+            ctx.closePath();
+        }else if(p.facing == -1){
+            ctx.lineTo(p.x+30, p.y);
+            ctx.lineTo(p.x+30, p.y+18);
+            ctx.lineTo(p.x+18, p.y+10);
+            ctx.lineTo(p.x, p.y+8);
+            ctx.closePath();
+        }
+        ctx.closePath();
+        ctx.fill();
         //polygon for arm
         ctx.fillStyle = p.arm.color;
         ctx.beginPath();
@@ -220,28 +259,49 @@
     }
 
     function spikeSwing(p){
-
+        console.log('spiek');
+        var progress = (Date.now()-p.arm.startSwing)/duration;//from 0-1 to animated the swing fully
+        if(p.facing == -1){
+            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(progress*pi*2+pi*3/4);
+            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(progress*pi*2+pi*3/4);
+            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(progress*pi*2+pi/4);
+            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(progress*pi*2+pi/4);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(progress*pi*2+Math.atan(-43/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(progress*pi*2+Math.atan(-43/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(progress*pi*2+Math.atan(43/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(progress*pi*2+Math.atan(43/7)+pi);
+        }else if(p.facing == 1){
+            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(-progress*pi*2+pi*3/4);
+            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(-progress*pi*2+pi*3/4);
+            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(-progress*pi*2+pi/4);
+            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(-progress*pi*2+pi/4);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(-progress*pi*2+Math.atan(-43/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(-progress*pi*2+Math.atan(-43/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(-progress*pi*2+Math.atan(43/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(-progress*pi*2+Math.atan(43/7)+pi);
+        }
     }
     function setSwing(p){
         var progress = (Date.now()-p.arm.startSwing)/duration;//from 0-1 to animated the swing fully
+        var t = 4*progress*(1-progress)
         if(p.facing == 1){
-            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(progress*pi*2/3+pi*3/4);
-            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(progress*pi*2/3+pi*3/4);
-            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(progress*pi*2/3+pi/4);
-            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(progress*pi*2/3+pi/4);
-            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(progress*pi*2/3+Math.atan(-43/7));
-            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(progress*pi*2/3+Math.atan(-43/7));
-            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(progress*pi*2/3+Math.atan(43/7)+pi);
-            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(progress*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(t*pi*2/3+pi*3/4);
+            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(t*pi*2/3+pi*3/4);
+            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(t*pi*2/3+pi/4);
+            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(t*pi*2/3+pi/4);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(t*pi*2/3+Math.atan(-43/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(t*pi*2/3+Math.atan(-43/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(t*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(t*pi*2/3+Math.atan(43/7)+pi);
         }else if(p.facing == -1){
-            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(-progress*pi*2/3+pi*3/4);
-            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(-progress*pi*2/3+pi*3/4);
-            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(-progress*pi*2/3+pi/4);
-            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(-progress*pi*2/3+pi/4);
-            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(-progress*pi*2/3+Math.atan(-43/7));
-            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(-progress*pi*2/3+Math.atan(-43/7));
-            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(-progress*pi*2/3+Math.atan(43/7)+pi);
-            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(-progress*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(-t*pi*2/3+pi*3/4);
+            p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(-t*pi*2/3+pi*3/4);
+            p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(-t*pi*2/3+pi/4);
+            p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(-t*pi*2/3+pi/4);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(-t*pi*2/3+Math.atan(-43/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(-t*pi*2/3+Math.atan(-43/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(-t*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(-t*pi*2/3+Math.atan(43/7)+pi);
         }
     }
 

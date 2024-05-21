@@ -1,3 +1,32 @@
+
+
+
+
+
+
+<!--To do list:
+
+make collsions
+add player #2 and inputs
+and player selection
+make collsions accurate on exact time they hit and exact angle and exact exit data
+choose server or make a game yourself
+maybe add local multiplayer
+maybe add customizable skins, shirts, hair
+maybe add a way to specatate
+get on whcompsci.github.io
+-->
+
+
+
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,7 +61,7 @@
     var ctx = canvas.getContext("2d");
 
     var pi = 3.14159;
-    var duration = 500;//in ms for swings
+    var duration = 300;//in ms for swings
     var d = [Math.sqrt(98), Math.sqrt(98), Math.sqrt(2858), Math.sqrt(2858)];//caluculated from desmos graph
 
     var playerX = 50;
@@ -65,6 +94,7 @@
             x4: playerX + 16,
             y4: playerY + 80,
             color: "#000080",
+            velocityX: 0,
             animationCompletion: 0,/*from 0-1*/
             swingType: "none",
             swinging: false,
@@ -82,16 +112,16 @@
     var volleyball = {
         x: canvas.width / 2, // Initial x position
         y: canvas.height / 2, // Initial y position
-        radius: 30,
-        x: 2, // Change in x (speed in x direction)
-        y: 2, // Change in y (speed in y direction)
-        velocityX: 0,
+        radius: 15,
+        velocityX: 5,
         velocityY: 0,
-        gravity: -0.2,
+        gravity: 0.2,
+        color: "#BB8572",
+        bounciness: 1,
+        width: 15,
+        height: 15,
+        airResistance: 0.99, //multiply each velocity to slow down a little
     };
-    // var playerArm = {x: player.x + 16,y: player.y + 30,width: 14,height: 50,velocityX: 0,velocityY: 0,accelX: 0,gravity: 0,moveable: false,color: "#000080",speed: 0,jump: 0,bounciness: 0,/*from 0-1*/facing: 1,/*1 means right, -1 means left*/follows: player,followsXOff: 16,followsYOff: 30,poly: true,x2: player.x + 30,y2: player.y + 30,x3: player.x + 30,y3: player.y + 80,x4: player.x + 16,y4: player.y + 80,animationCompletion: 0,/*from 0-1*/swingType: "none",};
-    // player.arm = playerArm;
-    // var playerHead = {x: player.x,y: player.y,width: 30,height: 30,velocityX: 0,velocityY: 0,accelX: 0,gravity: 0,moveable: false,color: "#d6c498",speed: 0,jump: 0,bounciness: 0,/*from 0-1*/facing: 1,/*1 means right, -1 means left*/follows: player,followsXOff: 0,followsYOff: 0,};
     var movingObjArr = [player];
 
     // Function to handle key down events
@@ -145,7 +175,132 @@
 
     // Function to update player's position and handle collisions
     function moveBall(){
+        volleyball.velocityX *= volleyball.airResistance;
+        volleyball.velocityY = (volleyball.velocityY+volleyball.gravity)*volleyball.airResistance;
+        volleyball.x += volleyball.velocityX;
+        volleyball.y += volleyball.velocityY;
+        //checks within bounds
+        stayWithinX(volleyball);
+        stayWithinY(volleyball);
+        //draws the ball
+        ctx.beginPath();
+        ctx.arc(volleyball.x, volleyball.y, volleyball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = volleyball.color;
+        ctx.fill();
+        ctx.closePath();
+        for(var i = 0; i < movingObjArr.length; i++){
+            checkCollision(volleyball, movingObjArr[i]);
+            checkCollision(volleyball, movingObjArr[i].arm);
+        }
 
+    }
+    function checkCollision(vb, obj){
+        
+        if((obj.y4 - obj.y1) != 60){
+            var objPoints;
+            if(obj.width == 30){
+                objPoints = [obj.x, obj.y, obj.x+obj.width, obj.y, obj.x+obj.width, obj.y+obj.height, obj.x, obj.y+obj.height];
+            }else{
+                objPoints = [obj.x1, obj.y1, obj.x2, obj.y2, obj.x3, obj.y3, obj.x4, obj.y4];
+            }
+            var closestPoints = get2ClosestPointsFromVB(vb, objPoints);
+            var c1 = closestPoints.c1;
+            var c2 = closestPoints.c2;
+
+            if(c1.x == c2.x){//for when points are vertical only on collision
+                if(Math.abs(vb.x-c1.x) < vb.radius && vb.y > Math.min(c1.y, c2.y) && vb.y < Math.max(c1.y, c2.y)){
+                    //console.log(vb.x-c1.x, vb.x+vb.radius, vb.x+vb.radius-vb.velocityX)
+                    if(vb.x-c1.x < 0){//if obj.x is greater than vb.x+vb.rad (coming from left)
+                        vb.x -= (vb.radius + (vb.x-c1.x)) * (1+vb.bounciness);
+                        vb.velocityX = -1*Math.abs(vb.velocityX) + obj.velocityX;
+                    }else if(vb.x-c1.x > 0){
+                        vb.x += (vb.radius - (vb.x-c1.x)) * (1+vb.bounciness);
+                        vb.velocityX = Math.abs(vb.velocityX) + obj.velocityX;
+                    }
+                }
+            }else{//when the points have a slope between them on the collision
+                var m = (c2.y-c1.y)/(c2.x-c1.x);
+                var smallestDist = {d: 15, x: -1};//finds the x value of the smallest distance so vb.x&y will be perpindicular to the mx
+                for(var i = Math.min(c1.x, c2.x); i < Math.max(c1.x, c2.x); i++){//goes through every x from the 2 points and checks if at the x the distance is less than the radius
+                    if(distFormula(i, m*(i-c2.x)+c2.y, vb.x, vb.y) <= smallestDist.d){
+                        smallestDist.d = distFormula(i, m*(i-c2.x)+c2.y, vb.x, vb.y);
+                        smallestDist.x = i;
+                        smallestDist.y = m*(i-c2.x)+c2.y;
+                    }
+                }
+                var a = Math.atan(m);
+                var d = 15-smallestDist.d;
+                var p = 8;
+                if(smallestDist.d < vb.radius){//if the distance is less than radius swing collision
+                    console.log(smallestDist, vb.x, vb.y);
+                    if(vb.y > smallestDist.y){//volleyball is lower than arm
+                        console.log('hit it down', a*180/pi);
+                        vb.velocityX -= p*Math.sin(a);
+                        vb.velocityY += p*Math.cos(a);
+                    }else{//volleyball is higher than arm
+                        console.log('hit it up', a*180/pi);
+                        vb.x += d*Math.sin(a);
+                        vb.y -= d*Math.cos(a);
+                        vb.velocityX += p*Math.sin(a);
+                        vb.velocityY -= p*Math.cos(a);
+                    }
+                }else{
+                    console.log('no collision');
+                }
+                drawPixelCircle(smallestDist.x, smallestDist.y, "green");
+                // vb.velocityX = 
+                // vb.velocityY = 
+            }
+
+            //drawPixelCircle(c1.x, c1.y, "red");
+            //drawPixelCircle(c2.x, c2.y, "red");
+        }
+    }
+    function get2ClosestPointsFromVB(vb, arr){
+        var dists = [];
+        for(var x = 0; x < arr.length; x+=2){
+            dists.push(distFormula(vb.x, vb.y, arr[x], arr[x+1]));
+        }
+        var c1 = {x: arr[0], y: arr[1], d: dists[0], i: 0};
+        for(var x = 1; x < dists.length; x++){
+            if(dists[x] < c1.d){
+                c1.d = dists[x];
+                c1.x = arr[2*x];
+                c1.y = arr[2*x+1];
+                c1.i = x;
+            }
+        }
+        var greatestAngle = 0;
+        var greatestAngleIndex = 0;
+        for(var x = 0; x < arr.length; x+=2){
+            if(2*c1.i != x){
+                //instead of finding distance because it is normally wrong up close find angle that is greatest
+                //using law of cosine
+                var a = distFormula(vb.x, vb.y, c1.x, c1.y);
+                var b = distFormula(vb.x, vb.y, arr[x], arr[x+1]);
+                var c = distFormula(c1.x, c1.y, arr[x], arr[x+1]);
+                var cosC = (a*a + b*b - c*c) / (2*a*b);
+                var rad = Math.acos(cosC);
+                if(rad > greatestAngle){
+                    greatestAngle = rad;
+                    greatestAngleIndex = x;
+                }
+            }
+        }
+        var c2 = {x: arr[greatestAngleIndex], y: arr[greatestAngleIndex+1], d: dists[greatestAngleIndex/2], i: greatestAngleIndex/2};
+        //drawPixelCircle(c1.x, c1.y, "red");
+        //drawPixelCircle(c2.x, c2.y, "red");
+        return({c1: c1, c2: c2});
+    }
+    function drawPixelCircle(x, y, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, 2 * Math.PI); // Radius of 0.5 makes it a 1-pixel circle
+        ctx.fillStyle = color; // Color of the circle
+        ctx.fill(); // Fill the circle
+        ctx.closePath();
+    }
+    function distFormula(x1, y1, x2, y2){
+        return(Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2)));
     }
     function updatePlayer(p) {
         //moves to new position
@@ -162,6 +317,7 @@
             p.facing = Math.round(p.velocityX/Math.abs(p.velocityX));
         }
         
+        p.arm.velocityX = p.velocityX;
         //sets constant "starting position"
         if(p.facing == 1){
             p.arm.x = p.x + 16;
@@ -188,7 +344,6 @@
         }else if(p.arm.swingType == "set" && p.arm.swinging && (Date.now()-p.arm.startSwing) < duration){
             setSwing(p);
         }else if(p.arm.swingType == "spike" && p.arm.swinging && (Date.now()-p.arm.startSwing) < duration){
-            console.log('swingType spike');
             spikeSwing(p);
         //if swinging and time spent is too long the end the swing
         }else if(p.arm.swinging && (Date.now()-p.arm.startSwing) > duration){
@@ -240,7 +395,10 @@
         if (p.x + p.width >= canvas.width) {
             p.velocityX *= -1*p.bounciness;
             p.x -= (p.x + p.width - canvas.width) * (1 + p.bounciness);
-        } else if (p.x <= 0) {
+        } else if(p.radius != null && p.x-p.radius <= 0){
+            p.velocityX *= -1*p.bounciness;
+            p.x -= (p.x-p.radius) * (1+p.bounciness);
+        }else if (p.x <= 0) {
             p.velocityX *= -1*p.bounciness;
             p.x -= p.x * (1+p.bounciness);
         }
@@ -259,26 +417,26 @@
     }
 
     function spikeSwing(p){
-        console.log('spiek');
-        var progress = (Date.now()-p.arm.startSwing)/duration;//from 0-1 to animated the swing fully
+        var t = (Date.now()-p.arm.startSwing)/duration;//from 0-1 to animated the swing fully
+        var progress = 0.198*Math.tan(pi*t/1.3-pi/2.6) + 0.5;
         if(p.facing == -1){
             p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(progress*pi*2+pi*3/4);
             p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(progress*pi*2+pi*3/4);
             p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(progress*pi*2+pi/4);
             p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(progress*pi*2+pi/4);
-            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(progress*pi*2+Math.atan(-43/7));
-            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(progress*pi*2+Math.atan(-43/7));
-            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(progress*pi*2+Math.atan(43/7)+pi);
-            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(progress*pi*2+Math.atan(43/7)+pi);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-53/7)))+d[2]*Math.cos(progress*pi*2+Math.atan(-53/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-53/7)))-d[2]*Math.sin(progress*pi*2+Math.atan(-53/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(53/7)+pi))+d[3]*Math.cos(progress*pi*2+Math.atan(53/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(53/7)+pi))-d[3]*Math.sin(progress*pi*2+Math.atan(53/7)+pi);
         }else if(p.facing == 1){
             p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(-progress*pi*2+pi*3/4);
             p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(-progress*pi*2+pi*3/4);
             p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(-progress*pi*2+pi/4);
             p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(-progress*pi*2+pi/4);
-            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(-progress*pi*2+Math.atan(-43/7));
-            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(-progress*pi*2+Math.atan(-43/7));
-            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(-progress*pi*2+Math.atan(43/7)+pi);
-            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(-progress*pi*2+Math.atan(43/7)+pi);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-53/7)))+d[2]*Math.cos(-progress*pi*2+Math.atan(-53/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-53/7)))-d[2]*Math.sin(-progress*pi*2+Math.atan(-53/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(53/7)+pi))+d[3]*Math.cos(-progress*pi*2+Math.atan(53/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(53/7)+pi))-d[3]*Math.sin(-progress*pi*2+Math.atan(53/7)+pi);
         }
     }
     function setSwing(p){
@@ -289,19 +447,19 @@
             p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(t*pi*2/3+pi*3/4);
             p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(t*pi*2/3+pi/4);
             p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(t*pi*2/3+pi/4);
-            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(t*pi*2/3+Math.atan(-43/7));
-            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(t*pi*2/3+Math.atan(-43/7));
-            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(t*pi*2/3+Math.atan(43/7)+pi);
-            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(t*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-53/7)))+d[2]*Math.cos(t*pi*2/3+Math.atan(-53/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-53/7)))-d[2]*Math.sin(t*pi*2/3+Math.atan(-53/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(53/7)+pi))+d[3]*Math.cos(t*pi*2/3+Math.atan(53/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(53/7)+pi))-d[3]*Math.sin(t*pi*2/3+Math.atan(53/7)+pi);
         }else if(p.facing == -1){
             p.arm.x1 = (p.arm.x-d[0]*Math.cos(pi*3/4))+d[0]*Math.cos(-t*pi*2/3+pi*3/4);
             p.arm.y1 = (p.arm.y+d[0]*Math.sin(pi*3/4))-d[0]*Math.sin(-t*pi*2/3+pi*3/4);
             p.arm.x2 = (p.arm.x-d[1]*Math.cos(pi*3/4))+d[1]*Math.cos(-t*pi*2/3+pi/4);
             p.arm.y2 = (p.arm.y+d[1]*Math.sin(pi*3/4))-d[1]*Math.sin(-t*pi*2/3+pi/4);
-            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-43/7)))+d[2]*Math.cos(-t*pi*2/3+Math.atan(-43/7));
-            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-43/7)))-d[2]*Math.sin(-t*pi*2/3+Math.atan(-43/7));
-            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(43/7)+pi))+d[3]*Math.cos(-t*pi*2/3+Math.atan(43/7)+pi);
-            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(43/7)+pi))-d[3]*Math.sin(-t*pi*2/3+Math.atan(43/7)+pi);
+            p.arm.x3 = (p.arm.x+p.arm.width-d[2]*Math.cos(Math.atan(-53/7)))+d[2]*Math.cos(-t*pi*2/3+Math.atan(-53/7));
+            p.arm.y3 = (p.arm.y+p.arm.height+d[2]*Math.sin(Math.atan(-53/7)))-d[2]*Math.sin(-t*pi*2/3+Math.atan(-53/7));
+            p.arm.x4 = (p.arm.x-d[3]*Math.cos(Math.atan(53/7)+pi))+d[3]*Math.cos(-t*pi*2/3+Math.atan(53/7)+pi);
+            p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(53/7)+pi))-d[3]*Math.sin(-t*pi*2/3+Math.atan(53/7)+pi);
         }
     }
 

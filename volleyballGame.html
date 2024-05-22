@@ -1,32 +1,3 @@
-
-
-
-
-
-
-<!--To do list:
-
-make collsions
-add player #2 and inputs
-and player selection
-make collsions accurate on exact time they hit and exact angle and exact exit data
-choose server or make a game yourself
-maybe add local multiplayer
-maybe add customizable skins, shirts, hair
-maybe add a way to specatate
-get on whcompsci.github.io
--->
-
-
-
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,19 +14,19 @@ get on whcompsci.github.io
 <canvas id="gameCanvas" width="800" height="400"></canvas>
 <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js"></script>
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD5aNloa6l4xAyIKSP78bU_Hjl_iRRoJKA",
-        authDomain: "volleyball-game-5344a.firebaseapp.com",
-        databaseURL: "https://volleyball-game-5344a-default-rtdb.firebaseio.com",
-        projectId: "volleyball-game-5344a",
-        storageBucket: "volleyball-game-5344a.appspot.com",
-        messagingSenderId: "12860376010",
-        appId: "1:12860376010:web:f6c45720c5bc83ccfbc533",
-        measurementId: "G-D00RCW570B"
-    };
+    // const firebaseConfig = {
+    //     apiKey: "AIzaSyD5aNloa6l4xAyIKSP78bU_Hjl_iRRoJKA",
+    //     authDomain: "volleyball-game-5344a.firebaseapp.com",
+    //     databaseURL: "https://volleyball-game-5344a-default-rtdb.firebaseio.com",
+    //     projectId: "volleyball-game-5344a",
+    //     storageBucket: "volleyball-game-5344a.appspot.com",
+    //     messagingSenderId: "12860376010",
+    //     appId: "1:12860376010:web:f6c45720c5bc83ccfbc533",
+    //     measurementId: "G-D00RCW570B"
+    // };
 
-    firebase.initializeApp(firebaseConfig);
-    var server = firebase.database().ref('server-0');
+    // firebase.initializeApp(firebaseConfig);
+    // var server = firebase.database().ref('server-0');
 
     var canvas = document.getElementById("gameCanvas");
     var ctx = canvas.getContext("2d");
@@ -64,9 +35,12 @@ get on whcompsci.github.io
     var duration = 300;//in ms for swings
     var d = [Math.sqrt(98), Math.sqrt(98), Math.sqrt(2858), Math.sqrt(2858)];//caluculated from desmos graph
 
+    var running = true;
+    var p1Score = 0;
+    var p2Score = 0;
     var playerX = 50;
-    var playerY = canvas.height - 100;
-    var player = {
+    var playerY = canvas.height - 120;
+    var player1 = {
         x: playerX,
         y: playerY,
         width: 30,
@@ -80,6 +54,7 @@ get on whcompsci.github.io
         jump: -10,
         bounciness: 0,//from 0-1
         facing: 1,//1 means right -1 means left
+        player: "p1",
         arm:  {
             width: 14,
             height: 60,
@@ -95,7 +70,6 @@ get on whcompsci.github.io
             y4: playerY + 80,
             color: "#000080",
             velocityX: 0,
-            animationCompletion: 0,/*from 0-1*/
             swingType: "none",
             swinging: false,
             startSwing: null,//in milliseconds
@@ -105,8 +79,51 @@ get on whcompsci.github.io
             y: playerY,
             width: 30,
             height: 30,
-            color: "#d6c498",  
+            color: "#b6a478",  
             hairColor: "#473515", 
+        },
+    }
+    var player2 = {
+        x: canvas.width-30-playerX,
+        y: playerY,
+        width: 30,
+        height: 120,
+        velocityX: 0,
+        velocityY: 0,
+        accelX: 0,
+        gravity: 0.5,
+        color: "#FF0000",
+        speed: 5,
+        jump: -10,
+        bounciness: 0,//from 0-1
+        facing: -1,//1 means right -1 means left
+        player: "p2",
+        arm:  {
+            width: 14,
+            height: 60,
+            x: canvas.width-30-playerX + 16,
+            y: canvas.width-30-playerY,
+            x1: canvas.width-30-playerX + 16,
+            y1: canvas.width-30-playerY + 30,
+            x2: canvas.width-30-playerX + 30,
+            y2: canvas.width-30-playerY + 30,
+            x3: canvas.width-30-playerX + 30,
+            y3: canvas.width-30-playerY + 80,
+            x4: canvas.width-30-playerX + 16,
+            y4: canvas.width-30-playerY + 80,
+            color: "#800000",
+            velocityX: 0,
+            swingType: "none",
+            swinging: false,
+            startSwing: null,//in milliseconds
+        },
+        head: {
+            x: canvas.width-30-playerX,
+            y: playerY,
+            width: 30,
+            height: 30,
+            color: "#f6e4b8",  
+            hairColor: "#FFDDDD", 
         },
     }
     var volleyball = {
@@ -114,65 +131,161 @@ get on whcompsci.github.io
         y: canvas.height / 2, // Initial y position
         radius: 15,
         velocityX: 5,
-        velocityY: 0,
+        velocityY: -7,
         gravity: 0.2,
         color: "#BB8572",
         bounciness: 1,
         width: 15,
-        height: 15,
+        height: 0,
         airResistance: 0.99, //multiply each velocity to slow down a little
     };
-    var movingObjArr = [player];
+    var movingObjArr = [player1, player2];
 
     // Function to handle key down events
     function handleKeyDown(event) {
-        if (event.key === "ArrowLeft") {
-            player.velocityX = -player.speed;
-        } else if (event.key === "ArrowRight") {
-            player.velocityX = player.speed;
-        } else if (event.key === " "){
-            if(playerIsGrounded()){
-                player.velocityY = player.jump;
+        if (event.key === 'a') {
+            player1.velocityX = -player1.speed;
+        } else if (event.key === 'd') {
+            player1.velocityX = player1.speed;
+        } else if (event.code === "ShiftLeft"){
+            if(playerIsGrounded(player1)){
+                player1.velocityY = player1.jump;
             }
-        }else if(event.key === "ArrowUp"){
-            if(!player.arm.swinging){//if not swinging then swing animation
-                player.arm.swinging = true;
-                player.arm.startSwing = Date.now();
-                player.arm.swingType = "spike";
-                spikeSwing(player);
+        }else if(event.key === 'w'){
+            if(!player1.arm.swinging){//if not swinging then swing animation
+                player1.arm.swinging = true;
+                player1.arm.startSwing = Date.now();
+                player1.arm.swingType = "spike";
+                spikeSwing(player1);
             }
-        }else if(event.key === "ArrowDown"){
-            if(!player.arm.swinging){
-                player.arm.swinging = true;
-                player.arm.startSwing = Date.now();
-                player.arm.swingType = "set";
-                setSwing(player);
+        }else if(event.key === 's'){
+            if(!player1.arm.swinging){
+                player1.arm.swinging = true;
+                player1.arm.startSwing = Date.now();
+                player1.arm.swingType = "set";
+                setSwing(player1);
             }
         }
-        updateFirebase();
-    }
+        if (event.key === "ArrowLeft") {
+            player2.velocityX = -player2.speed;
+        } else if (event.key === "ArrowRight") {
+            player2.velocityX = player2.speed;
+        } else if (event.code === "ShiftRight"){
+            if(playerIsGrounded(player2)){
+                player2.velocityY = player2.jump;
+            }
+        }else if(event.key === "ArrowUp"){
+            if(!player2.arm.swinging){//if not swinging then swing animation
+                player2.arm.swinging = true;
+                player2.arm.startSwing = Date.now();
+                player2.arm.swingType = "spike";
+                spikeSwing(player2);
+            }
+        }else if(event.key === "ArrowDown"){
+            if(!player2.arm.swinging){
+                player2.arm.swinging = true;
+                player2.arm.startSwing = Date.now();
+                player2.arm.swingType = "set";
+                setSwing(player2);
+            }
+        }
+        //updateFirebase();
+    }   
 
     // Function to handle key up events
     function handleKeyUp(event) {
-        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-            player.velocityX = 0;
+        if (event.key === 'a' || event.key === 'd') {
+            player1.velocityX = 0;
         }
-        updateFirebase();
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+            player2.velocityX = 0;
+        }
+        //updateFirebase();
     }
 
+    // var image = new Image();
+    // img.src = 'your_image_url.jpg'; // Replace 'your_image_url.jpg' with the URL of your image
+
+    // function drawImage(){
+    //     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    // }
+
+        var timer;
+        var count = 3;
     // Function to update game state
     function update() {
+        if(!running){
+            timer = setInterval(countdown, 1000);
+            return 
+        }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
- 
+        // if (img.complete) {
+        //     drawImage();
+        // } else {
+        //     img.onload = drawImage;
+        // }
         for (var i = 0; i < movingObjArr.length; i++) {
             updatePlayer(movingObjArr[i]);
             drawPlayer(movingObjArr[i]);
         }
         moveBall();
-        //console.log(player, playerArm, playerHead);
+        makeArena();
+        if(running){
+            checkNet();
+        }
         requestAnimationFrame(update);
     }
-
+    function countdown(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPlayer(player1);
+        drawPlayer(player2);
+        moveBall();
+        makeArena();
+        if(count > 0){
+            ctx.font = "50px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText(count, 380, 150);
+            count--;
+        }else{
+            clearInterval(timer);
+            count = 3;
+            running = true;
+            requestAnimationFrame(update);
+        }
+    }
+    function makeArena(){
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText(p1Score, 350, 20);
+        ctx.fillText(p2Score, 440, 20);
+        ctx.fillStyle = '#AAAAAA'
+        ctx.fillRect(395,220,10,180);
+        console.log(p1Score, p2Score)
+    }
+    function getPoint(p){
+        if(p.player == "p1"){
+            volleyball.velocityX = 5;
+            p2Score++;
+            console.log(p1Score, "score");
+            
+        }else if(p.player == "p2"){
+            volleyball.velocityX = -5;
+            p1Score++;
+        }
+        player1.x = 50;
+        player1.y = canvas.height-120;
+        player1.velocityX = 0;
+        player1.velocityY = 0;
+        player1.arm.swingType = "none";
+        player2.x = canvas.width-30-50;
+        player2.y = canvas.height-120;
+        player2.velocityX = 0;
+        player2.velocityY = 0;
+        player2.arm.swingType = "none";
+        volleyball.x = canvas.width/2;
+        volleyball.y = canvas.height/2;
+        volleyball.velocityY = -8;
+    }
     // Function to update player's position and handle collisions
     function moveBall(){
         volleyball.velocityX *= volleyball.airResistance;
@@ -182,6 +295,7 @@ get on whcompsci.github.io
         //checks within bounds
         stayWithinX(volleyball);
         stayWithinY(volleyball);
+        checkNet();
         //draws the ball
         ctx.beginPath();
         ctx.arc(volleyball.x, volleyball.y, volleyball.radius, 0, Math.PI * 2);
@@ -193,6 +307,17 @@ get on whcompsci.github.io
             checkCollision(volleyball, movingObjArr[i].arm);
         }
 
+    }
+    function checkNet(){
+        if(volleyball.x+volleyball.width > 395 && volleyball.x+volleyball.width < 405 && volleyball.y-volleyball.height > 220 && volleyball.velocityX > 0){
+            volleyball.velocityX *= -1*volleyball.bounciness;
+            volleyball.x -= (volleyball.x+volleyball.radius - 395) * (1+volleyball.bounciness);
+        }else if(volleyball.x-volleyball.width < 405 && volleyball.x-volleyball.width > 395 && volleyball.y-volleyball.height > 220 && volleyball.velocityX < 0){
+            volleyball.velocityX *= -1*volleyball.bounciness;
+            volleyball.x -= (405- volleyball.x+volleyball.radius) * (1+volleyball.bounciness);
+        }else{
+            return
+        }
     }
     function checkCollision(vb, obj){
         
@@ -232,28 +357,20 @@ get on whcompsci.github.io
                 var d = 15-smallestDist.d;
                 var p = 8;
                 if(smallestDist.d < vb.radius){//if the distance is less than radius swing collision
-                    console.log(smallestDist, vb.x, vb.y);
+                    //console.log(smallestDist, vb.x, vb.y);
                     if(vb.y > smallestDist.y){//volleyball is lower than arm
-                        console.log('hit it down', a*180/pi);
+                        vb.x -= d*Math.sin(a);
+                        vb.y += d*Math.cos(a);
                         vb.velocityX -= p*Math.sin(a);
                         vb.velocityY += p*Math.cos(a);
                     }else{//volleyball is higher than arm
-                        console.log('hit it up', a*180/pi);
                         vb.x += d*Math.sin(a);
                         vb.y -= d*Math.cos(a);
                         vb.velocityX += p*Math.sin(a);
                         vb.velocityY -= p*Math.cos(a);
                     }
-                }else{
-                    console.log('no collision');
-                }
-                drawPixelCircle(smallestDist.x, smallestDist.y, "green");
-                // vb.velocityX = 
-                // vb.velocityY = 
+                }   
             }
-
-            //drawPixelCircle(c1.x, c1.y, "red");
-            //drawPixelCircle(c2.x, c2.y, "red");
         }
     }
     function get2ClosestPointsFromVB(vb, arr){
@@ -291,13 +408,6 @@ get on whcompsci.github.io
         //drawPixelCircle(c1.x, c1.y, "red");
         //drawPixelCircle(c2.x, c2.y, "red");
         return({c1: c1, c2: c2});
-    }
-    function drawPixelCircle(x, y, color) {
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, 2 * Math.PI); // Radius of 0.5 makes it a 1-pixel circle
-        ctx.fillStyle = color; // Color of the circle
-        ctx.fill(); // Fill the circle
-        ctx.closePath();
     }
     function distFormula(x1, y1, x2, y2){
         return(Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2)));
@@ -352,7 +462,6 @@ get on whcompsci.github.io
             p.arm.swingType = "none";
         }
     }
-
     // Function to draw player on canvas
     function drawPlayer(p) {
         //rectangle for player 
@@ -390,32 +499,50 @@ get on whcompsci.github.io
         ctx.closePath()
         ctx.fill(); 
     }
-
     function stayWithinX(p){
-        if (p.x + p.width >= canvas.width) {
+        var min = 0;
+        var max = 800;
+        if(p.player == "p1"){
+            max = 395;
+        }
+        if(p.player == "p2"){
+            min = 405;
+        }
+        if (p.x + p.width >= max) {
             p.velocityX *= -1*p.bounciness;
-            p.x -= (p.x + p.width - canvas.width) * (1 + p.bounciness);
-        } else if(p.radius != null && p.x-p.radius <= 0){
+            p.x -= (p.x + p.width - max) * (1 + p.bounciness);
+        } else if(p.radius != null && p.x-p.radius <= min){
             p.velocityX *= -1*p.bounciness;
-            p.x -= (p.x-p.radius) * (1+p.bounciness);
-        }else if (p.x <= 0) {
+            p.x -= (p.x-p.radius-min) * (1+p.bounciness);
+        }else if (p.x <= min) {
             p.velocityX *= -1*p.bounciness;
-            p.x -= p.x * (1+p.bounciness);
+            p.x -= (p.x-min) * (1+p.bounciness);
         }
     }
     function stayWithinY(p){
         if (p.y + p.height >= canvas.height) {
             p.velocityY *= -1*p.bounciness;
             p.y -= (p.y + p.height - canvas.height) * (1 + p.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
+            if(p.player == null){
+                running = false;
+                if(p.x>400){
+                    getPoint(player2);
+                }else{
+                    getPoint(player1);
+                }
+            }
+        }
+        if (p.y - p.radius <= 0) {
+            p.velocityY *= -1*p.bounciness;
+            p.y -= (p.y - p.radius) * (1 + p.bounciness);//(1+bounciness) needs to be 2* with full bounce and 1* to go to the end go the canvas
         }
     }
-    function playerIsGrounded(){
-        if(canvas.height == Math.round(player.height + player.y)){
+    function playerIsGrounded(p){
+        if(canvas.height == Math.round(p.height + p.y)){
             return true
         }
         return false
     }
-
     function spikeSwing(p){
         var t = (Date.now()-p.arm.startSwing)/duration;//from 0-1 to animated the swing fully
         var progress = 0.198*Math.tan(pi*t/1.3-pi/2.6) + 0.5;
@@ -462,44 +589,46 @@ get on whcompsci.github.io
             p.arm.y4 = (p.arm.y+p.arm.height+d[3]*Math.sin(Math.atan(53/7)+pi))-d[3]*Math.sin(-t*pi*2/3+Math.atan(53/7)+pi);
         }
     }
-
     // Function to update Firebase with player's position
-    function updateFirebase() {
-        var serverMessage = server.child("player1");
-        serverMessage.set({
-            x: player.x,
-            y: player.y,
-            vX: player.velocityX,
-            vY: player.velocityY,
-        });
-    }
-
+    // function updateFirebase() {
+    //     var serverMessage = server.child("player1");
+    //     serverMessage.set({
+    //         x: player.x,
+    //         y: player.y,
+    //         vX: player.velocityX,
+    //         vY: player.velocityY,
+    //     });
+    // }
     // Event listeners for keyboard input
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("keyup", handleKeyUp);
 
-    server.on('value', function(snapshot) {
-    var serverData = snapshot.val();
-    if (serverData && serverData.player1) {
-        // Use the server data if available, otherwise fallback to player.x
-        if(Math.round(serverData.player1.vX) == 0){
-            player.x = Math.round((serverData.player1.x !== undefined ? serverData.player1.x : player.x) * 100) / 100;
-        }
-        player.velocityX = Math.round((serverData.player1.vX !== undefined ? serverData.player1.vX : player.velocityX) * 100) / 100;
-        if(Math.round(serverData.player1.vY) == 0){
-            player.y = Math.round((serverData.player1.y !== undefined ? serverData.player1.y : player.y) * 100) / 100; 
-        }
-        player.velocityY = Math.round((serverData.player1.vY !== undefined ? serverData.player1.vY : player.velocityY) * 100) / 100;
+//     server.on('value', function(snapshot) {
+//     var serverData = snapshot.val();
+//     if (serverData && serverData.player1) {
+//         // Use the server data if available, otherwise fallback to player.x
+//         if(Math.round(serverData.player1.vX) == 0){
+//             player.x = Math.round((serverData.player1.x !== undefined ? serverData.player1.x : player.x) * 100) / 100;
+//         }
+//         player.velocityX = Math.round((serverData.player1.vX !== undefined ? serverData.player1.vX : player.velocityX) * 100) / 100;
+//         if(Math.round(serverData.player1.vY) == 0){
+//             player.y = Math.round((serverData.player1.y !== undefined ? serverData.player1.y : player.y) * 100) / 100; 
+//         }
+//         player.velocityY = Math.round((serverData.player1.vY !== undefined ? serverData.player1.vY : player.velocityY) * 100) / 100;
 
-    } else {
-        // Handle missing or invalid data
-        console.error('Invalid data received from server');
-    }
-}, function(error) {
-    console.error('Error fetching data:', error);
-});
+//     } else {
+//         // Handle missing or invalid data
+//         console.error('Invalid data received from server');
+//     }
+// }, function(error) {
+//     console.error('Error fetching data:', error);
+// });
     // Start the game loop
-    requestAnimationFrame(update);
+    start();
+    function start(){
+
+        requestAnimationFrame(update);
+    }
 
 </script>
 </body>

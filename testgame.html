@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ice Physics - Pixels Per Second</title>
+    <title>Hockey Animation - Two Frames</title>
     <style>
         body { margin: 0; background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         canvas { background: #e3f2fd; border: 5px solid #fff; image-rendering: pixelated; }
@@ -16,26 +16,32 @@
         const ctx = canvas.getContext('2d');
 
         const player = {
-            img: new Image(),
-            src: 'red-hockey-guy64.png',
+            // Now we store two image objects
+            img1: new Image(),
+            img2: new Image(),
+            currentImg: null, 
+            
             x: 370,
             y: 220,
-            width: 64,
-            height: 64,
-            // PHYSICS CONSTANTS
-            vx: 0,          // Velocity X
-            vy: 0,          // Velocity Y
-            accel: 1200,    // Pixels per second^2
-            friction: 0.96, // 1.0 = no friction, 0.0 = instant stop
-            maxSpeed: 400,  // Max pixels per second
+            width: 128,  // Adjusted for your 128x128 request
+            height: 128,
+            
+            vx: 0,
+            vy: 0,
+            accel: 1200,
+            friction: 0.96,
+            maxSpeed: 400,
+            
             facingLeft: false,
-            isLoaded: false
+            animTimer: 0,
+            frame: 1
         };
 
-        player.img.onload = () => { player.isLoaded = true; };
-        player.img.src = player.src;
+        // Load both images
+        player.img1.src = 'red-hockey-guy64.png';
+        player.img2.src = 'red-hockey-guy2-64.png';
+        player.currentImg = player.img1;
 
-        // Track key states for smooth multi-key movement
         const keys = {};
         window.addEventListener('keydown', e => keys[e.key] = true);
         window.addEventListener('keyup', e => keys[e.key] = false);
@@ -43,11 +49,8 @@
         let lastTime = 0;
 
         function gameLoop(timestamp) {
-            // Calculate Delta Time in seconds
             let dt = (timestamp - lastTime) / 1000;
             lastTime = timestamp;
-
-            // Cap dt to prevent massive jumps if the tab loses focus
             if (dt > 0.1) dt = 0.1;
 
             update(dt);
@@ -57,64 +60,51 @@
         }
 
         function update(dt) {
-            // 1. Acceleration based on Input
-            if (keys['ArrowLeft'] || keys['a']) {
-                player.vx -= player.accel * dt;
-                player.facingLeft = true;
-            }
-            if (keys['ArrowRight'] || keys['d']) {
-                player.vx += player.accel * dt;
-                player.facingLeft = false;
-            }
-            if (keys['ArrowUp'] || keys['w']) player.vy -= player.accel * dt;
-            if (keys['ArrowDown'] || keys['s']) player.vy += player.accel * dt;
+            let isMoving = false;
 
-            // 2. Apply Friction (Multiplicative)
+            // Movement Input
+            if (keys['ArrowLeft'] || keys['a']) { player.vx -= player.accel * dt; player.facingLeft = true; isMoving = true; }
+            if (keys['ArrowRight'] || keys['d']) { player.vx += player.accel * dt; player.facingLeft = false; isMoving = true; }
+            if (keys['ArrowUp'] || keys['w']) { player.vy -= player.accel * dt; isMoving = true; }
+            if (keys['ArrowDown'] || keys['s']) { player.vy += player.accel * dt; isMoving = true; }
+
+            // Animation Logic: Only swap frames if moving
+            if (isMoving) {
+                player.animTimer += dt;
+                if (player.animTimer > 0.15) { // Swap every 0.15 seconds
+                    player.frame = player.frame === 1 ? 2 : 1;
+                    player.currentImg = player.frame === 1 ? player.img1 : player.img2;
+                    player.animTimer = 0;
+                }
+            } else {
+                player.currentImg = player.img1; // Default to frame 1 when still
+            }
+
+            // Physics
             player.vx *= player.friction;
             player.vy *= player.friction;
-
-            // 3. Speed Clamping (Don't go too fast)
-            const speed = Math.sqrt(player.vx**2 + player.vy**2);
-            if (speed > player.maxSpeed) {
-                const ratio = player.maxSpeed / speed;
-                player.vx *= ratio;
-                player.vy *= ratio;
-            }
-
-            // 4. Update Position
             player.x += player.vx * dt;
             player.y += player.vy * dt;
 
-            // 5. Boundary Checks (Stay on the rink)
-            if (player.x < 0) { player.x = 0; player.vx *= -0.5; } // Bounce slightly
-            if (player.x + player.width > canvas.width) { player.x = canvas.width - player.width; player.vx *= -0.5; }
-            if (player.y < 0) { player.y = 0; player.vy *= -0.5; }
-            if (player.y + player.height > canvas.height) { player.y = canvas.height - player.height; player.vy *= -0.5; }
+            // Bounds
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Ice Markings
-            ctx.strokeStyle = "rgba(255, 0, 0, 0.2)";
-            ctx.beginPath();
-            ctx.arc(400, 250, 50, 0, Math.PI * 2);
-            ctx.stroke();
-
-            if (player.isLoaded) {
-                ctx.save();
-                if (player.facingLeft) {
-                    ctx.translate(player.x + player.width, player.y);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(player.img, 0, 0, player.width, player.height);
-                } else {
-                    ctx.drawImage(player.img, player.x, player.y, player.width, player.height);
-                }
-                ctx.restore();
+            ctx.save();
+            if (player.facingLeft) {
+                ctx.translate(player.x + player.width, player.y);
+                ctx.scale(-1, 1);
+                ctx.drawImage(player.currentImg, 0, 0, player.width, player.height);
+            } else {
+                ctx.drawImage(player.currentImg, player.x, player.y, player.width, player.height);
             }
+            ctx.restore();
         }
 
-        // Start the loop
         requestAnimationFrame(gameLoop);
     </script>
 </body>

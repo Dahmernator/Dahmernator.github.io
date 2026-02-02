@@ -9,38 +9,42 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <canvas id="gameCanvas" width="960" height="640"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
         const player = {
-            // Now we store two image objects
-            img1: new Image(),
-            img2: new Image(),
-            currentImg: null, 
-            
+            color: '#ffff22',
             x: 370,
-            y: 220,
-            width: 128,  // Adjusted for your 128x128 request
-            height: 128,
-            
+            y: (640 - 64) / 2, // center vertically
+            width: 64,
+            height: 64,
             vx: 0,
-            vy: 0,
-            accel: 1200,
+            accel: 600,
             friction: 0.96,
-            maxSpeed: 400,
-            
-            facingLeft: false,
-            animTimer: 0,
-            frame: 1
+            maxSpeed: 500,
+            facingLeft: false
         };
 
-        // Load both images
-        player.img1.src = 'red-hockey-guy64.png';
-        player.img2.src = 'red-hockey-guy2-64.png';
-        player.currentImg = player.img1;
+        const rink = {
+            img: new Image(),
+            y: 0,
+            vy: 0,
+            scaledHeight: 0
+        };
+        rink.img.src = 'hockey-rink.png';
+        rink.img.onload = () => {
+            // scale rink to canvas width
+            rink.scaledHeight = 1920
+            // start with rink centered so player appears over center
+            if (rink.scaledHeight > canvas.height) {
+                rink.y = 1140;
+            } else {
+                rink.y = 0;
+            }
+        };
 
         const keys = {};
         window.addEventListener('keydown', e => keys[e.key] = true);
@@ -62,46 +66,110 @@
         function update(dt) {
             let isMoving = false;
 
-            // Movement Input
+            // Horizontal movement moves the player
             if (keys['ArrowLeft'] || keys['a']) { player.vx -= player.accel * dt; player.facingLeft = true; isMoving = true; }
             if (keys['ArrowRight'] || keys['d']) { player.vx += player.accel * dt; player.facingLeft = false; isMoving = true; }
-            if (keys['ArrowUp'] || keys['w']) { player.vy -= player.accel * dt; isMoving = true; }
-            if (keys['ArrowDown'] || keys['s']) { player.vy += player.accel * dt; isMoving = true; }
 
-            // Animation Logic: Only swap frames if moving
-            if (isMoving) {
-                player.animTimer += dt;
-                if (player.animTimer > 0.15) { // Swap every 0.15 seconds
-                    player.frame = player.frame === 1 ? 2 : 1;
-                    player.currentImg = player.frame === 1 ? player.img1 : player.img2;
-                    player.animTimer = 0;
-                }
-            } else {
-                player.currentImg = player.img1; // Default to frame 1 when still
-            }
+            // Vertical input moves the rink (so player stays vertically fixed)
+            if (keys['ArrowUp'] || keys['w']) { rink.vy += player.accel * dt; isMoving = true; }
+            if (keys['ArrowDown'] || keys['s']) { rink.vy -= player.accel * dt; isMoving = true; }
 
-            // Physics
+            // Apply friction / update player horizontal
             player.vx *= player.friction;
-            player.vy *= player.friction;
+            if (Math.abs(player.vx) < 0.01) player.vx = 0;
             player.x += player.vx * dt;
-            player.y += player.vy * dt;
+            if (player.x < 80) player.x = 80;
+            if (player.x + player.width > 880) player.x = 880 - player.width;
 
-            // Bounds
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+            rink.vy *= player.friction;
+            if (Math.abs(rink.vy) < 0.01) rink.vy = 0;
+            
+            rink.y += rink.vy * dt;
+
+            let middleY = canvas.height / 2 - player.width / 2;
+            if(rink.y <= 640 && rink.vy < 0){
+                let diff = 640 - rink.y;
+                rink.y = 640;
+                player.y += diff;
+            }else if(rink.y >= 1920 && rink.vy > 0){
+                let diff = rink.y - 1920;
+                rink.y = 1920;
+                player.y -= diff;
+            }
+            if(player.y > middleY && rink.vy > 0){
+                rink.y = 640;
+                player.y -= rink.vy * dt;
+                if(player.y < middleY){
+                    let diff = middleY - player.y;
+                    player.y = middleY;
+                    rink.y += diff;
+                }
+            }else if(player.y < middleY && rink.vy < 0){
+                rink.y = 1920 
+                player.y -= rink.vy * dt;
+                if(player.y > middleY){
+                    let diff = player.y - middleY;
+                    player.y = middleY;
+                    rink.y -= diff;
+                }
+            }
+            if(player.y < 80){
+                player.y = 80;
+                rink.vy = 0;
+            }else if(player.y + player.width > 560){
+                player.y = 560 - player.width;
+                rink.vy = 0;
+            }
+            console.log(player.x, player.y, rink.y);
+            // x pos is player.x, y pos is rink.y-player.y
+
+            if((player.x - 880)**2 + (rink.y - player.y-1920)**2 < 224**2){
+                console.log("out of bounds");
+            }
+            
+            /* Clamp rink so we don't scroll past edges (when rink is taller than canvas)
+            if (rink.scaledHeight > canvas.height) {
+                const minY = canvas.height - rink.scaledHeight;
+                if (rink.y > 0) rink.y = 0;
+                if (rink.y < minY) rink.y = minY;
+            } else {
+                // If rink is smaller than canvas, wrap/tile
+                if (rink.y > 0) rink.y -= rink.scaledHeight;
+                if (rink.y < -rink.scaledHeight) rink.y += rink.scaledHeight;
+            }
+            
+            if(rink.y == 0 && player.y <= 186){
+                player.vy = -rink.vy
+                player.y += player.vy * dt;
+            }else if(rink.y == 1380 && player.y >= 186){
+                player.vy = -rink.vy
+                player.y += player.vy * dt;
+            }
+                */
+        }
+
+        function drawRink() {
+            if (!rink.img.complete) return;
+            const h = rink.scaledHeight || canvas.height;
+            ctx.drawImage(rink.img, 0, 0, rink.img.width, rink.img.height, 0, rink.y - h, canvas.width, h);
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Draw rink first
+            drawRink();
+
             ctx.save();
-            if (player.facingLeft) {
-                ctx.translate(player.x + player.width, player.y);
-                ctx.scale(-1, 1);
-                ctx.drawImage(player.currentImg, 0, 0, player.width, player.height);
-            } else {
-                ctx.drawImage(player.currentImg, player.x, player.y, player.width, player.height);
-            }
+                ctx.fillStyle = player.color;
+                // draw a square player (player.width x player.width)
+                if (player.facingLeft) {
+                    ctx.translate(player.x + player.width, player.y);
+                    ctx.scale(-1, 1);
+                    ctx.fillRect(0, 0, player.width, player.width);
+                } else {
+                    ctx.fillRect(player.x, player.y, player.width, player.width);
+                }
             ctx.restore();
         }
 

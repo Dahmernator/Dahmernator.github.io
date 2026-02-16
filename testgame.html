@@ -22,9 +22,9 @@
             width: 64,
             height: 64,
             vx: 0,
-            accel: 600,
+            accel: 500,
             friction: 0.96,
-            maxSpeed: 500,
+            maxSpeed: 600,
             facingLeft: false
         };
 
@@ -51,7 +51,9 @@
         window.addEventListener('keyup', e => keys[e.key] = false);
 
         let lastTime = 0;
-
+        function distance(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
         function gameLoop(timestamp) {
             let dt = (timestamp - lastTime) / 1000;
             lastTime = timestamp;
@@ -128,7 +130,37 @@
             // see if they are > 224 - 1/2 width of player from the center of the circle
             // if so put their center within the 224 - 1/2 width on the line that intersects the center of the circle and the center of the player
             // update their velocity and momentum 
-            
+            let collisionVelocityDeminisher = 0.9; // how much velocity is lost when colliding with the circle, 0.9 means 10% velocity is lost
+            // Top-left circle collision
+            if(player.y < 288 && player.x < 80 + 224 - player.width/2 && distance(player.x + player.width/2, player.y + player.width/2, 80+224, 80+224) > 224 - player.width/2){
+                console.log("Colliding with top-left circle");
+                let angle = Math.atan2(player.y + player.width/2 - (80+224), player.x + player.width/2 - (80+224));
+                player.x = 80 + 224 + Math.cos(angle) * (224 - player.width/2) - player.width/2;
+                player.y = 80 + 224 + Math.sin(angle) * (224 - player.width/2) - player.width/2;
+                // add velocity in the direction away from the center of the circle
+                let speed = distance(0, 0, player.vx, player.vy) * collisionVelocityDeminisher;
+                let newVx = Math.cos(angle) * speed;
+                let newVy = Math.sin(angle) * speed;
+                // if the new velocity is less than the old velocity, use the new velocity
+                if(distance(0, 0, newVx, newVy) < distance(0, 0, player.vx, player.vy)){
+                    player.vx = newVx;
+                    player.vy = newVy;
+                }
+            }else if(player.y < 288 && player.x > 880 - 224 - player.width/2 && distance(player.x + player.width/2, player.y + player.width/2, 880-224, 80+224) > 224 - player.width/2){
+                console.log("Colliding with top-right circle");
+                let angle = Math.atan2(player.y + player.width/2 - (80+224), player.x + player.width/2 - (880-224));
+                player.x = 880 - 224 + Math.cos(angle) * (224 - player.width/2) - player.width/2;
+                player.y = 80 + 224 + Math.sin(angle) * (224 - player.width/2) - player.width/2;
+                // add velocity in the direction away from the center of the circle
+                let speed = distance(0, 0, player.vx, player.vy) * collisionVelocityDeminisher;
+                let newVx = Math.cos(angle) * speed;
+                let newVy = Math.sin(angle) * speed;
+                // if the new velocity is less than the old velocity, use the new velocity
+                if(distance(0, 0, newVx, newVy) < distance(0, 0, player.vx, player.vy)){
+                    player.vx = newVx;
+                    player.vy = newVy;
+                }
+            }
                 
 
             
@@ -164,6 +196,17 @@
 
             // Draw rink first
             drawRink();
+            
+            // Draw arc for corner circle
+            ctx.beginPath();
+            ctx.arc(80+224, 80+224, 224-32, 0, 2 * Math.PI, false);
+            ctx.arc(880-224, 80+224, 224-32, 0, 2 * Math.PI, false);
+            ctx.arc(80+224, 640-80-224, 224-32, 0, 2 * Math.PI, false);
+            ctx.arc(880-224, 640-80-224, 224-32, 0, 2 * Math.PI, false);
+
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
             ctx.save();
                 ctx.fillStyle = player.color;
@@ -175,7 +218,6 @@
                 } else {
                     ctx.fillRect(player.x, player.y, player.width, player.width);
                 }
-            context.arc(80+224, 80+224, 224, 0, 2 * Math.PI, false)
             ctx.restore();
         }
 

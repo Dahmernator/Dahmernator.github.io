@@ -123,11 +123,14 @@
             console.log(player.x, player.y, rink.y);
             // x pos is player.x, y pos is rink.y-player.y
 
-            if((880 - (player.x+player.width))**2 + (rink.y - player.y-1920)**2 < 224**2){
-                console.log("out of bounds top right");
-            }else if((80 - player.x)**2 + (rink.y - player.y-1920)**2 < 224**2){
-                console.log("out of bounds top left");
-            }
+            //rink goes from x=80 to 880 and y goes from 80&1920 to 560&640, screen.y and rink.y    
+            // find the closest corner the center of the player is at, center of the corners are at 
+            // see if they are > 224 - 1/2 width of player from the center of the circle
+            // if so put their center within the 224 - 1/2 width on the line that intersects the center of the circle and the center of the player
+            // update their velocity and momentum 
+            
+                
+
             
             /* Clamp rink so we don't scroll past edges (when rink is taller than canvas)
             if (rink.scaledHeight > canvas.height) {
@@ -172,6 +175,7 @@
                 } else {
                     ctx.fillRect(player.x, player.y, player.width, player.width);
                 }
+            context.arc(80+224, 80+224, 224, 0, 2 * Math.PI, false)
             ctx.restore();
         }
 

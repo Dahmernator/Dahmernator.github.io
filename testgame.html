@@ -124,7 +124,9 @@
             // x pos is player.x, y pos is rink.y-player.y
 
             if((880 - (player.x+player.width))**2 + (rink.y - player.y-1920)**2 < 224**2){
-                console.log("out of bounds");
+                console.log("out of bounds top right");
+            }else if((80 - player.x)**2 + (rink.y - player.y-1920)**2 < 224**2){
+                console.log("out of bounds top left");
             }
             
             /* Clamp rink so we don't scroll past edges (when rink is taller than canvas)

@@ -22,9 +22,10 @@
             width: 64,
             height: 64,
             vx: 0,
-            accel: 500,
+            vy: 0,
+            accel: 600,
             friction: 0.96,
-            maxSpeed: 600,
+            maxSpeed: 650,
             facingLeft: false
         };
 
@@ -51,7 +52,7 @@
         window.addEventListener('keyup', e => keys[e.key] = false);
 
         let lastTime = 0;
-        function distance(x1, y1, x2, y2) {
+        function distance(x1, y1, x2, y2) {// performs distance formula for 2 coordinates given
             return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
         }
         function gameLoop(timestamp) {
@@ -64,70 +65,98 @@
 
             requestAnimationFrame(gameLoop);
         }
-
-        function update(dt) {
-            let isMoving = false;
-
-            // Horizontal movement moves the player
-            if (keys['ArrowLeft'] || keys['a']) { player.vx -= player.accel * dt; player.facingLeft = true; isMoving = true; }
-            if (keys['ArrowRight'] || keys['d']) { player.vx += player.accel * dt; player.facingLeft = false; isMoving = true; }
-
-            // Vertical input moves the rink (so player stays vertically fixed)
-            if (keys['ArrowUp'] || keys['w']) { rink.vy += player.accel * dt; isMoving = true; }
-            if (keys['ArrowDown'] || keys['s']) { rink.vy -= player.accel * dt; isMoving = true; }
-
-            // Apply friction / update player horizontal
-            player.vx *= player.friction;
-            if (Math.abs(player.vx) < 0.01) player.vx = 0;
-            player.x += player.vx * dt;
-            if (player.x < 80) player.x = 80;
-            if (player.x + player.width > 880) player.x = 880 - player.width;
-
-            rink.vy *= player.friction;
-            if (Math.abs(rink.vy) < 0.01) rink.vy = 0;
-            
-            rink.y += rink.vy * dt;
-
-            let middleY = canvas.height / 2 - player.width / 2;
-            if(rink.y <= 640 && rink.vy < 0){
-                let diff = 640 - rink.y;
-                rink.y = 640;
-                player.y += diff;
-            }else if(rink.y >= 1920 && rink.vy > 0){
-                let diff = rink.y - 1920;
-                rink.y = 1920;
-                player.y -= diff;
+        function checkXBounds(currPlayer){// forces player within 80 & 880, the boundary for the rink
+            if(currPlayer.x < 80){// will need to add x + radius
+                currPlayer.x = 80;
             }
-            if(player.y > middleY && rink.vy > 0){
+            if(currPlayer.x + player.width > 880){// will work same for radius
+                currPlayer.x = 880 - player.width;
+            }
+        }
+        function checkYBounds(currPlayer, dt){
+            let middleY = (canvas.height - player.width) / 2;// will be canvas.height/2 - radius
+            console.log(player.y);
+            if(rink.y < 640){// moves player down when at bottom of rink
+                let diff = 640 - rink.y;
+                player.y += diff;
+                rink.y = 640;
+            }else if(rink.y > 1920){// moves player up when at top of rink
+                let diff = rink.y - 1920;
+                player.y -= diff;
+                rink.y = 1920;
+            }
+            if(player.y > middleY && rink.vy > 0 && rink.y < 1000){// moves player up when rink is locked at bottom
                 rink.y = 640;
                 player.y -= rink.vy * dt;
                 if(player.y < middleY){
-                    let diff = middleY - player.y;
-                    player.y = middleY;
-                    rink.y += diff;
-                }
-            }else if(player.y < middleY && rink.vy < 0){
-                rink.y = 1920 
-                player.y -= rink.vy * dt;
-                if(player.y > middleY){
                     let diff = player.y - middleY;
-                    player.y = middleY;
+                    player.y = 288;
                     rink.y -= diff;
                 }
             }
-            if(player.y < 80){
+            if(player.y < middleY && rink.vy < 0){// moves player down when rink is locked at top
+                rink.y = 1920;
+                player.y -= rink.vy * dt
+                if(player.y > middleY){
+                    let diff = player.y - middleY;
+                    player.y = 288;
+                    rink.y += diff;
+                }
+            }
+            if(player.y < 80){// prevents player from exiting rink at top
                 player.y = 80;
                 rink.vy = 0;
-            }else if(player.y + player.width > 560){
+            }else if(player.y + player.width > 560){// prevents player from exiting rink at bottom
                 player.y = 560 - player.width;
                 rink.vy = 0;
             }
-            console.log(player.x, player.y, rink.y);
-            // x pos is player.x, y pos is rink.y-player.y
-
-            
                 
 
+        }
+        function moveCurrentPlayer(currPlayer, xMov, yMov, dt){
+            currPlayer.vx += currPlayer.accel * xMov * dt;// changes velo with accel, player direction, and dt
+            currPlayer.vy += currPlayer.accel * yMov * dt;
+            currPlayer.vx *= currPlayer.friction;// demishes velo with friction
+            currPlayer.vy *= currPlayer.friction;
+            rink.vy = currPlayer.vy;
+            if(Math.abs(currPlayer.vx) < 0.01){// if really small vx, make it 0
+                currPlayer.vx = 0;
+            }
+            if(Math.abs(currPlayer.vy) < 0.01){// if really small vy, make it 0
+                currPlayer.vy = 0;
+            }
+            currPlayer.x += currPlayer.vx * dt;
+            rink.y += rink.vy * dt;
+            //currPlayer.y += currPlayer.vy * dt; hold off for now cause we also have to move the rink opposite in sync w/ player
+            checkXBounds(currPlayer);
+            checkYBounds(currPlayer, dt);
+        }
+        function update(dt) {
+            let currentPlayer = player;
+            let xMov = 0;
+            let yMov = 0;
+            let sqrtPoint5 = 0.707;
+            // Horizontal movement moves the player
+            if (keys['ArrowLeft'] || keys['a']) {
+                xMov -= 1;
+            }
+            if (keys['ArrowRight'] || keys['d']) {
+                xMov += 1;
+            }
+            // Vertical input moves the rink (so player stays vertically fixed)
+            if (keys['ArrowUp'] || keys['w']){
+                yMov += 1;
+            }
+            if (keys['ArrowDown'] || keys['s']){
+                yMov -= 1;
+            }
+            // if moving in x & y direction, move 1 unit diagonally
+            if(xMov * yMov != 0){// mults moving direction by sqrt(0.5) if moving diagonally
+                xMov *= sqrtPoint5;
+                yMov *= sqrtPoint5;
+            }
+
+            moveCurrentPlayer(currentPlayer, xMov, yMov, dt); //rn does physics equations and checks x bounds
             
            //rink goes from x=80 to 880 and y goes from 80&1920 to 560&640, screen.y and rink.y    
             // find the closest corner the center of the player is at, center of the corners are at 
